@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/splash_screen.dart';
+import 'screens/bson_demo_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,11 +17,23 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: ChikitsaSplashScreen(
-        onAnimationComplete: () {
-          // Navigate to your home screen here
-        },
-      ),
+      home: const SplashWrapper(), 
+    );
+  }
+}
+
+class SplashWrapper extends StatelessWidget {
+  const SplashWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ChikitsaSplashScreen(
+      onAnimationComplete: () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const BsonDemoScreen()),
+        );
+      },
     );
   }
 }

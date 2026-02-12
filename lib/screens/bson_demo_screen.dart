@@ -11,53 +11,98 @@ class BsonDemoScreen extends StatefulWidget {
 
 class _BsonDemoScreenState extends State<BsonDemoScreen> {
   final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _patientIdController = TextEditingController();
+  final TextEditingController _patientNameController = TextEditingController();
+  final TextEditingController _patientAgeController = TextEditingController();
   final TextEditingController _symptomsController = TextEditingController();
+  final TextEditingController _temperatureController = TextEditingController();
+  final TextEditingController _bpController = TextEditingController();
+  final TextEditingController _heartRateController = TextEditingController();
+  
   SmsSendResult? _lastResult;
   bool _isLoading = false;
+  String _selectedGender = 'Male';
   
-  Map<String, dynamic> _getSampleData() {
-    List<String> symptoms = ['fever', 'cough', 'fatigue'];
+  Map<String, dynamic> _getPatientData() {
+    List<String> symptoms = [];
     
     if (_symptomsController.text.trim().isNotEmpty) {
-      symptoms.add(_symptomsController.text.trim());
+      symptoms = _symptomsController.text
+          .split(',')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
     }
     
     return {
-      'patient_id': 'P12345',
+      'patient_id': _patientIdController.text.trim().isNotEmpty 
+          ? _patientIdController.text.trim() 
+          : 'P${DateTime.now().millisecondsSinceEpoch}',
+      'patient_name': _patientNameController.text.trim(),
+      'age': _patientAgeController.text.trim().isNotEmpty 
+          ? int.tryParse(_patientAgeController.text.trim()) ?? 0 
+          : 0,
+      'gender': _selectedGender,
+      'phone': _phoneController.text.trim(),
       'symptoms': symptoms,
-      'temperature': 38.5,
-      'blood_pressure': '120/80',
-      'heart_rate': 78,
+      'temperature': _temperatureController.text.trim().isNotEmpty 
+          ? double.tryParse(_temperatureController.text.trim()) ?? 0.0 
+          : 0.0,
+      'blood_pressure': _bpController.text.trim(),
+      'heart_rate': _heartRateController.text.trim().isNotEmpty 
+          ? int.tryParse(_heartRateController.text.trim()) ?? 0 
+          : 0,
       'timestamp': DateTime.now().toIso8601String(),
-      'location': {'lat': 28.6139, 'lng': 77.2090},
-      'medicines': [
-        {'name': 'Paracetamol', 'dosage': '500mg', 'frequency': '3x daily'},
-        {'name': 'Azithromycin', 'dosage': '250mg', 'frequency': '1x daily'},
-      ],
+      'location': {'lat': 28.6139, 'lng': 77.2090}, 
     };
   }
 
   Future<void> _sendData() async {
     if (_phoneController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a phone number')),
-      );
+      _showError('Please enter phone number');
+      return;
+    }
+    if (_patientNameController.text.isEmpty) {
+      _showError('Please enter patient name');
+      return;
+    }
+    if (_symptomsController.text.isEmpty) {
+      _showError('Please enter at least one symptom');
       return;
     }
 
     setState(() => _isLoading = true);
 
-    final sampleData = _getSampleData();
+    final patientData = _getPatientData();
     
     final result = await SmsService.sendWithBestCompression(
       phoneNumber: _phoneController.text,
-      data: sampleData,
+      data: patientData,
     );
 
     setState(() {
       _lastResult = result;
       _isLoading = false;
     });
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.message),
+          backgroundColor: result.success ? Colors.green : Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+  
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   @override
@@ -66,7 +111,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text('Smart 2G Transmission'),
+        title: const Text('Patient Data Transmission'),
         elevation: 0,
       ),
       body: SafeArea(
@@ -76,7 +121,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Ultra-Low Bandwidth Data Transfer',
+                'Patient Information',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
@@ -85,75 +130,118 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Auto-selects best compression for 2G networks',
+                'Fill patient details for 2G transmission',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.white.withValues(alpha: .6),
+                  color: Colors.white.withOpacity(0.6),
                 ),
               ),
               
               const SizedBox(height: 32),
               
-              TextField(
+              _buildTextField(
+                controller: _patientIdController,
+                label: 'Patient ID (Optional)',
+                hint: 'Auto-generated if empty',
+                icon: Icons.badge,
+              ),
+              
+              const SizedBox(height: 16),
+              
+              _buildTextField(
+                controller: _patientNameController,
+                label: 'Patient Name *',
+                hint: 'Enter full name',
+                icon: Icons.person,
+              ),
+              
+              const SizedBox(height: 16),
+              
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _patientAgeController,
+                      label: 'Age',
+                      hint: 'Years',
+                      icon: Icons.calendar_today,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildGenderDropdown(),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 16),
+              
+              _buildTextField(
                 controller: _phoneController,
-                style: const TextStyle(color: Colors.white),
+                label: 'Phone Number *',
+                hint: '+91 9876543210',
+                icon: Icons.phone,
                 keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  labelText: 'Phone Number',
-                  labelStyle: TextStyle(color: Colors.white.withValues(alpha: .6)),
-                  hintText: '+91 9876543210',
-                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: .3)),
-                  filled: true,
-                  fillColor: Colors.white.withValues(alpha: .05),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: .2)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: .2)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE8997F)),
-                  ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              const Text(
+                'Medical Details',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
                 ),
               ),
               
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               
-              TextField(
+              _buildTextField(
                 controller: _symptomsController,
-                style: const TextStyle(color: Colors.white),
-                maxLines: 4,
-                decoration: InputDecoration(
-                  labelText: 'Additional Symptoms (Optional)',
-                  labelStyle: TextStyle(color: Colors.white.withValues(alpha: .6)),
-                  hintText: 'Describe any additional symptoms...\ne.g., headache, body ache, difficulty breathing',
-                  hintStyle: TextStyle(color: Colors.white.withValues(alpha:.3)),
-                  filled: true,
-                  fillColor: Colors.white.withValues(alpha: .05),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha:0.2)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: .2)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE8997F)),
-                  ),
-                  alignLabelWithHint: true,
-                ),
+                label: 'Symptoms *',
+                hint: 'fever, cough, headache (comma-separated)',
+                icon: Icons.medical_services,
+                maxLines: 3,
               ),
               
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               
-              _buildDataPreview(),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _temperatureController,
+                      label: 'Temperature (°C)',
+                      hint: '37.5',
+                      icon: Icons.thermostat,
+                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _heartRateController,
+                      label: 'Heart Rate',
+                      hint: '78 bpm',
+                      icon: Icons.favorite,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
               
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              
+              _buildTextField(
+                controller: _bpController,
+                label: 'Blood Pressure',
+                hint: '120/80',
+                icon: Icons.monitor_heart,
+              ),
+              
+              const SizedBox(height: 32),
               
               SizedBox(
                 width: double.infinity,
@@ -169,12 +257,19 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.black)
-                      : const Text(
-                          'Compress & Prepare for Transmission',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.cloud_upload, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Send Patient Data',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                 ),
               ),
@@ -189,48 +284,82 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
     );
   }
 
-  Widget _buildDataPreview() {
-    final previewData = _getSampleData();
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: .1)),
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+  }) {
+    return TextField(
+      controller: controller,
+      style: const TextStyle(color: Colors.white),
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+        hintText: hint,
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+        prefixIcon: Icon(icon, color: const Color(0xFFE8997F)),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.05),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE8997F)),
+        ),
+        alignLabelWithHint: maxLines > 1,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.medical_information, color: Color(0xFFE8997F), size: 20),
-              SizedBox(width: 8),
-              Text(
-                'Medical Data Preview',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
+    );
+  }
+
+  Widget _buildGenderDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _selectedGender,
+          isExpanded: true,
+          dropdownColor: Colors.grey[900],
+          style: const TextStyle(color: Colors.white),
+          icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFE8997F)),
+          items: ['Male', 'Female', 'Other'].map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Row(
+                children: [
+                  Icon(
+                    value == 'Male' ? Icons.male : 
+                    value == 'Female' ? Icons.female : Icons.transgender,
+                    color: const Color(0xFFE8997F),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(value),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '• Patient ID: ${previewData['patient_id']}\n'
-            '• Symptoms: ${(previewData['symptoms'] as List).join(', ')}\n'
-            '• Temperature: ${previewData['temperature']}°C\n'
-            '• BP: ${previewData['blood_pressure']}\n'
-            '• Heart Rate: ${previewData['heart_rate']} bpm\n'
-            '• Medicines: ${(previewData['medicines'] as List).length} prescribed',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white.withValues(alpha:0.7),
-              height: 1.6,
-            ),
-          ),
-        ],
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            setState(() {
+              _selectedGender = newValue!;
+            });
+          },
+        ),
       ),
     );
   }
@@ -249,136 +378,208 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
         ),
         const SizedBox(height: 16),
         
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0xFFE8997F).withValues(alpha: .2),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFE8997F)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.auto_awesome, color: Color(0xFFE8997F), size: 16),
-              const SizedBox(width: 6),
-              Text(
-                'Using ${result.compressionMethod}',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFFE8997F),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: result.success 
+                    ? Colors.green.withOpacity(0.2)
+                    : Colors.red.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: result.success ? Colors.green : Colors.red,
                 ),
               ),
-            ],
-          ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    result.success ? Icons.check_circle : Icons.error,
+                    color: result.success ? Colors.green : Colors.red,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    result.success ? 'Sent Successfully' : 'Failed',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: result.success ? Colors.green : Colors.red,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            if (result.success)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8997F).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE8997F)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.auto_awesome, color: Color(0xFFE8997F), size: 16),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Using ${result.compressionMethod}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFE8997F),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
         ),
         
         const SizedBox(height: 16),
         
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                'JSON Size',
-                '${result.originalJsonSize} bytes',
-                Colors.red.withValues(alpha:0.2),
-                Colors.red,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                'Compressed',
-                '${result.dataSentBytes} bytes',
-                Colors.green.withValues(alpha:0.2),
-                Colors.green,
-              ),
-            ),
-          ],
-        ),
-        
-        const SizedBox(height: 12),
-        
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                'Saved',
-                '${result.bytesSaved} bytes',
-                const Color(0xFFE8997F).withValues(alpha:0.2),
-                const Color(0xFFE8997F),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                'Compression',
-                '${result.compressionRatio}%',
-                Colors.blue.withValues(alpha:0.2),
-                Colors.blue,
-              ),
-            ),
-          ],
-        ),
-        
-        const SizedBox(height: 24),
-        
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha:0.05),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha:0.1)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        if (result.success) ...[
+          Row(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Encoded Payload (Base64)',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.copy, size: 18),
-                    color: const Color(0xFFE8997F),
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: result.base64Payload));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Copied to clipboard')),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                result.base64Payload,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.white.withValues(alpha:0.6),
-                  fontFamily: 'monospace',
+              Expanded(
+                child: _buildStatCard(
+                  'Original',
+                  '${result.originalJsonSize} bytes',
+                  Colors.red.withOpacity(0.2),
+                  Colors.red,
                 ),
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 8),
-              Text(
-                '${result.base64Length} characters for SMS transmission',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.white.withValues(alpha:0.5),
-                  fontStyle: FontStyle.italic,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  'Sent',
+                  '${result.bytesSentOverNetwork} bytes',
+                  Colors.green.withOpacity(0.2),
+                  Colors.green,
                 ),
               ),
             ],
           ),
-        ),
+          
+          const SizedBox(height: 12),
+          
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Saved',
+                  '${result.bytesSaved} bytes',
+                  const Color(0xFFE8997F).withOpacity(0.2),
+                  const Color(0xFFE8997F),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  'Compression',
+                  '${result.compressionRatio}%',
+                  Colors.blue.withOpacity(0.2),
+                  Colors.blue,
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 12),
+          
+          _buildStatCard(
+            'HTTP Status',
+            '${result.httpStatusCode} - ${_getStatusText(result.httpStatusCode)}',
+            Colors.purple.withOpacity(0.2),
+            Colors.purple,
+          ),
+          
+          const SizedBox(height: 24),
+          
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Compressed Payload',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.copy, size: 18),
+                      color: const Color(0xFFE8997F),
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: result.base64Payload));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Copied to clipboard')),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  result.base64Payload,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.white.withOpacity(0.6),
+                    fontFamily: 'monospace',
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${result.base64Length} characters transmitted',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(0.5),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ] else ...[
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.red.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    result.message,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -389,7 +590,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: textColor.withValues(alpha:0.3)),
+        border: Border.all(color: textColor.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -398,14 +599,14 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.white.withValues(alpha:0.7),
+              color: Colors.white.withOpacity(0.7),
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w700,
               color: textColor,
             ),
@@ -413,5 +614,13 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
         ],
       ),
     );
+  }
+  
+  String _getStatusText(int statusCode) {
+    if (statusCode == 200) return 'OK';
+    if (statusCode == 201) return 'Created';
+    if (statusCode >= 400 && statusCode < 500) return 'Client Error';
+    if (statusCode >= 500) return 'Server Error';
+    return 'Unknown';
   }
 }

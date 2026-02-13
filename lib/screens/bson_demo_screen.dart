@@ -133,7 +133,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 'Fill patient details for 2G transmission',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: .6),
                 ),
               ),
               
@@ -299,19 +299,19 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
       maxLines: maxLines,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+        labelStyle: TextStyle(color: Colors.white.withValues(alpha:0.6)),
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+        hintStyle: TextStyle(color: Colors.white.withValues(alpha:0.3)),
         prefixIcon: Icon(icon, color: const Color(0xFFE8997F)),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.05),
+        fillColor: Colors.white.withValues(alpha:0.05),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha:0.2)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha:0.2)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -326,9 +326,9 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha:0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha:0.2)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
@@ -384,8 +384,8 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: result.success 
-                    ? Colors.green.withOpacity(0.2)
-                    : Colors.red.withOpacity(0.2),
+                    ? Colors.green.withValues(alpha:0.2)
+                    : Colors.red.withValues(alpha:0.2),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: result.success ? Colors.green : Colors.red,
@@ -416,7 +416,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8997F).withOpacity(0.2),
+                  color: const Color(0xFFE8997F).withValues(alpha:0.2),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: const Color(0xFFE8997F)),
                 ),
@@ -448,7 +448,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 child: _buildStatCard(
                   'Original',
                   '${result.originalJsonSize} bytes',
-                  Colors.red.withOpacity(0.2),
+                  Colors.red.withValues(alpha:0.2),
                   Colors.red,
                 ),
               ),
@@ -457,7 +457,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 child: _buildStatCard(
                   'Sent',
                   '${result.bytesSentOverNetwork} bytes',
-                  Colors.green.withOpacity(0.2),
+                  Colors.green.withValues(alpha:0.2),
                   Colors.green,
                 ),
               ),
@@ -472,7 +472,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 child: _buildStatCard(
                   'Saved',
                   '${result.bytesSaved} bytes',
-                  const Color(0xFFE8997F).withOpacity(0.2),
+                  const Color(0xFFE8997F).withValues(alpha:0.2),
                   const Color(0xFFE8997F),
                 ),
               ),
@@ -481,7 +481,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 child: _buildStatCard(
                   'Compression',
                   '${result.compressionRatio}%',
-                  Colors.blue.withOpacity(0.2),
+                  Colors.blue.withValues(alpha:0.2),
                   Colors.blue,
                 ),
               ),
@@ -493,7 +493,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
           _buildStatCard(
             'HTTP Status',
             '${result.httpStatusCode} - ${_getStatusText(result.httpStatusCode)}',
-            Colors.purple.withOpacity(0.2),
+            Colors.purple.withValues(alpha:0.2),
             Colors.purple,
           ),
           
@@ -502,9 +502,9 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha:0.05),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withValues(alpha:0.1)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -537,7 +537,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                   result.base64Payload,
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha:0.6),
                     fontFamily: 'monospace',
                   ),
                   maxLines: 3,
@@ -548,7 +548,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                   '${result.base64Length} characters transmitted',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha:0.5),
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -559,9 +559,9 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
+              color: Colors.red.withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.red.withOpacity(0.3)),
+              border: Border.all(color: Colors.red.withValues(alpha:0.3)),
             ),
             child: Row(
               children: [
@@ -590,7 +590,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: textColor.withOpacity(0.3)),
+        border: Border.all(color: textColor.withValues(alpha:0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -599,7 +599,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha:0.7),
             ),
           ),
           const SizedBox(height: 4),

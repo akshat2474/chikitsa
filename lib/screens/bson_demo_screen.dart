@@ -2,6 +2,7 @@ import 'package:chikitsa/screens/image_upload_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/text_service.dart';
+import '../widgets/voice_input_button.dart';
 
 class BsonDemoScreen extends StatefulWidget {
   const BsonDemoScreen({super.key});
@@ -316,6 +317,15 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
         hintText: hint,
         hintStyle: TextStyle(color: Colors.white.withValues(alpha:0.3)),
         prefixIcon: Icon(icon, color: const Color(0xFFE8997F)),
+        suffixIcon: VoiceInputButton(
+          onTextReceived: (englishText) {
+            if (label.contains('Symptoms') && controller.text.isNotEmpty) {
+              controller.text = "${controller.text}, $englishText";
+            } else {
+              controller.text = englishText;
+            }
+          },
+        ),
         filled: true,
         fillColor: Colors.white.withValues(alpha:0.05),
         border: OutlineInputBorder(

@@ -158,6 +158,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 label: 'Patient ID (Optional)',
                 hint: 'Auto-generated if empty',
                 icon: Icons.badge,
+                simulationText: "१२३",
               ),
               
               const SizedBox(height: 16),
@@ -167,6 +168,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 label: 'Patient Name *',
                 hint: 'Enter full name',
                 icon: Icons.person,
+                simulationText: "अक्षत सिंह",
               ),
               
               const SizedBox(height: 16),
@@ -180,6 +182,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                       hint: 'Years',
                       icon: Icons.calendar_today,
                       keyboardType: TextInputType.number,
+                      simulationText: "२५",
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -197,6 +200,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 hint: '+91 9876543210',
                 icon: Icons.phone,
                 keyboardType: TextInputType.phone,
+                simulationText: "९८७६५४३२१०",
               ),
               
               const SizedBox(height: 24),
@@ -218,6 +222,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 hint: 'fever, cough, headache (comma-separated)',
                 icon: Icons.medical_services,
                 maxLines: 3,
+                simulationText: "बुखार और खांसी",
               ),
               
               const SizedBox(height: 16),
@@ -231,6 +236,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                       hint: '37.5',
                       icon: Icons.thermostat,
                       keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      simulationText: "३७.५",
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -241,6 +247,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                       hint: '78 bpm',
                       icon: Icons.favorite,
                       keyboardType: TextInputType.number,
+                      simulationText: "७२",
                     ),
                   ),
                 ],
@@ -253,6 +260,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 label: 'Blood Pressure',
                 hint: '120/80',
                 icon: Icons.monitor_heart,
+                simulationText: "१२०/८०",
               ),
               
               const SizedBox(height: 32),
@@ -303,6 +311,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
     required String label,
     required String hint,
     required IconData icon,
+    required String simulationText,
     TextInputType? keyboardType,
     int maxLines = 1,
   }) {
@@ -318,6 +327,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
         hintStyle: TextStyle(color: Colors.white.withValues(alpha:0.3)),
         prefixIcon: Icon(icon, color: const Color(0xFFE8997F)),
         suffixIcon: VoiceInputButton(
+          simulationText: simulationText,
           onTextReceived: (englishText) {
             if (label.contains('Symptoms') && controller.text.isNotEmpty) {
               controller.text = "${controller.text}, $englishText";

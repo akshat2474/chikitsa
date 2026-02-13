@@ -5,8 +5,13 @@ import 'package:permission_handler/permission_handler.dart';
 
 class VoiceInputButton extends StatefulWidget {
   final Function(String result) onTextReceived;
+  final String simulationText;
 
-  const VoiceInputButton({super.key, required this.onTextReceived});
+  const VoiceInputButton({
+    super.key,
+    required this.onTextReceived,
+    this.simulationText = "Test Input", // Default value
+  });
 
   @override
   State<VoiceInputButton> createState() => _VoiceInputButtonState();
@@ -29,7 +34,7 @@ class _VoiceInputButtonState extends State<VoiceInputButton> {
   }
 
   Future<void> _toggleListening() async {
-    await _simulateVoiceInput("नमस्ते"); 
+    await _simulateVoiceInput(widget.simulationText);
     return;
 
     // if (_isListening) {
@@ -64,7 +69,7 @@ class _VoiceInputButtonState extends State<VoiceInputButton> {
     //   }
 
     //   setState(() => _isListening = true);
-      
+
     //   _speech.listen(
     //     localeId: 'hi_IN',
     //     listenFor: const Duration(seconds: 30),
@@ -81,7 +86,7 @@ class _VoiceInputButtonState extends State<VoiceInputButton> {
 
     //         try {
     //           if (val.recognizedWords.isNotEmpty) {
-    //             final String translation = 
+    //             final String translation =
     //                 await _onDeviceTranslator.translateText(val.recognizedWords);
     //             print("Translated: $translation");
     //             widget.onTextReceived(translation);
@@ -89,7 +94,7 @@ class _VoiceInputButtonState extends State<VoiceInputButton> {
     //         } catch (e) {
     //           print("Translation Error: $e");
     //         }
-            
+
     //         if(mounted) setState(() => _isTranslating = false);
     //       }
     //     },
@@ -101,15 +106,15 @@ class _VoiceInputButtonState extends State<VoiceInputButton> {
 
   Future<void> _simulateVoiceInput(String mockHindiText) async {
     setState(() => _isListening = true);
-    await Future.delayed(const Duration(milliseconds: 500)); 
+    await Future.delayed(const Duration(milliseconds: 500));
     setState(() {
       _isListening = false;
       _isTranslating = true;
     });
 
     try {
-      final String translation = await _onDeviceTranslator.translateText(mockHindiText);
-      print("DEBUG TRANSLATION: $mockHindiText -> $translation");
+      final String translation =
+          await _onDeviceTranslator.translateText(mockHindiText);
       widget.onTextReceived(translation);
     } catch (e) {
       print("Translation Error: $e");
@@ -129,10 +134,10 @@ class _VoiceInputButtonState extends State<VoiceInputButton> {
     return IconButton(
       icon: _isTranslating
           ? const SizedBox(
-              width: 24, 
-              height: 24, 
-              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFE8997F))
-            )
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: Color(0xFFE8997F)))
           : Icon(
               _isListening ? Icons.mic : Icons.mic_none,
               color: _isListening ? Colors.red : const Color(0xFFE8997F),

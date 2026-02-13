@@ -1,6 +1,7 @@
+import 'package:chikitsa/screens/image_upload_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../services/sms_service.dart';
+import '../services/text_service.dart';
 
 class BsonDemoScreen extends StatefulWidget {
   const BsonDemoScreen({super.key});
@@ -114,6 +115,18 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
         title: const Text('Patient Data Transmission'),
         elevation: 0,
       ),
+      floatingActionButton: FloatingActionButton.extended(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ImageUploadScreen()),
+        );
+      },
+      backgroundColor: const Color(0xFFE8997F),
+      foregroundColor: Colors.black,
+      icon: const Icon(Icons.add_a_photo),
+      label: const Text("Upload Image"),
+    ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),

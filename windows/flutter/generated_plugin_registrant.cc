@@ -6,9 +6,12 @@
 
 #include "generated_plugin_registrant.h"
 
+#include <file_selector_windows/file_selector_windows.h>
 #include <zstandard_windows/zstandard_windows_plugin_c_api.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
+  FileSelectorWindowsRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("FileSelectorWindows"));
   ZstandardWindowsPluginCApiRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("ZstandardWindowsPluginCApi"));
 }

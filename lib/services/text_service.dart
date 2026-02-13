@@ -11,8 +11,6 @@ class SmsService {
     required Map<String, dynamic> data,
   }) async {
     try {
-      print('📤 === Encoding Patient Data ===');
-
       final result = await ProtobufZstdHelper.encodeData(data);
 
       print('Original JSON: ${result.originalJsonSize} bytes');

@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:chikitsa/screens/bson_demo_screen.dart';
+import 'package:chikitsa/services/language_service.dart';
 import 'package:chikitsa/screens/medical_reminders_screen.dart';
 import 'package:chikitsa/screens/activity_history_screen.dart';
+import 'package:chikitsa/main.dart'; // For toggleTheme
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final lang = LanguageService.current;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -20,27 +26,61 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Container(width: 12, height: 12, color: Colors.black),
+                      Container(
+                        width: 12,
+                        height: 12,
+                        color: theme.colorScheme.onSurface,
+                      ),
                       const SizedBox(width: 8),
-                      Text('CHIKITSA',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -0.5)),
+                      Text(lang.get('BRAND'),
+                          style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5)),
                     ],
                   ),
-                  IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const ActivityHistoryScreen()),
-                      );
-                    },
-                    icon: const Icon(Icons.history, color: Colors.black),
+                  Row(
+                    children: [
+                      // Language Toggle
+                      TextButton(
+                        onPressed: () {
+                          LanguageService.current.toggleLanguage();
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: theme.colorScheme.onSurface,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.zero),
+                          side: BorderSide(
+                              color: theme.colorScheme.onSurface, width: 2),
+                        ),
+                        child: Text(
+                          LanguageService.current.isHindi ? 'EN' : 'हिंदी',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Theme Toggle
+                      IconButton(
+                        onPressed: toggleTheme,
+                        icon: Icon(
+                          isDark ? Icons.light_mode : Icons.dark_mode,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    const ActivityHistoryScreen()),
+                          );
+                        },
+                        icon: Icon(Icons.history,
+                            color: theme.colorScheme.onSurface),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -59,13 +99,13 @@ class HomeScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'FUTURE\nOF CARE.',
-                            style: Theme.of(context).textTheme.displayLarge,
+                            lang.get('HEADLINE'),
+                            style: theme.textTheme.displayLarge,
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            'We empower progressive individuals to create lasting impact through strategic health monitoring.',
-                            style: Theme.of(context).textTheme.bodyLarge,
+                            lang.get('SUBHEAD'),
+                            style: theme.textTheme.bodyLarge,
                           ),
                           const SizedBox(height: 32),
 
@@ -81,14 +121,21 @@ class HomeScreen extends StatelessWidget {
                                           const BsonDemoScreen()),
                                 );
                               },
-                              child: const Text('START ASSESSMENT'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: theme.colorScheme.onSurface,
+                                foregroundColor: theme.colorScheme.surface,
+                              ),
+                              child: Text(lang.get('CTA_START')),
                             ),
                           ),
                         ],
                       ),
                     ),
 
-                    const Divider(height: 1, thickness: 2, color: Colors.black),
+                    Divider(
+                        height: 1,
+                        thickness: 2,
+                        color: theme.colorScheme.onSurface),
 
                     // Feature Grid
                     // Brutalism grid: Borders between elements
@@ -103,7 +150,7 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         _buildBrutalistCard(
                           context,
-                          'MEDICATION\nTRACKER',
+                          lang.get('CARD_MEDS'),
                           Icons.medication_outlined,
                           () {},
                           borderRight: true,
@@ -111,7 +158,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         _buildBrutalistCard(
                           context,
-                          'SMART\nREMINDERS',
+                          lang.get('CARD_REMINDERS'),
                           Icons.alarm,
                           () {
                             Navigator.push(
@@ -126,7 +173,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         _buildBrutalistCard(
                           context,
-                          'GENERIC\nALTS',
+                          lang.get('CARD_GENERIC'),
                           Icons.currency_exchange,
                           () {},
                           borderRight: true,
@@ -134,7 +181,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         _buildBrutalistCard(
                           context,
-                          'RX\nSCANNER',
+                          lang.get('CARD_RX'),
                           Icons.document_scanner_outlined,
                           () {},
                           borderRight: false,
@@ -142,6 +189,11 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+
+                    Divider(
+                        height: 1,
+                        thickness: 2,
+                        color: theme.colorScheme.onSurface),
                   ],
                 ),
               ),
@@ -155,6 +207,7 @@ class HomeScreen extends StatelessWidget {
   Widget _buildBrutalistCard(
       BuildContext context, String title, IconData icon, VoidCallback onTap,
       {bool borderRight = false, bool borderBottom = false}) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -162,10 +215,10 @@ class HomeScreen extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             right: borderRight
-                ? const BorderSide(color: Colors.black, width: 2)
+                ? BorderSide(color: theme.colorScheme.onSurface, width: 2)
                 : BorderSide.none,
             bottom: borderBottom
-                ? const BorderSide(color: Colors.black, width: 2)
+                ? BorderSide(color: theme.colorScheme.onSurface, width: 2)
                 : BorderSide.none,
           ),
         ),
@@ -173,13 +226,13 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(icon, size: 32, color: Colors.black),
+            Icon(icon, size: 32, color: theme.colorScheme.onSurface),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                  ),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+              ),
             ),
           ],
         ),

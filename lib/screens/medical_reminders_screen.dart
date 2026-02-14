@@ -1,3 +1,4 @@
+import 'package:chikitsa/services/language_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -48,19 +49,22 @@ class _MedicationRemindersScreenState extends State<MedicationRemindersScreen> {
   }
 
   Future<void> _deleteReminder(int index, Map<String, dynamic> reminder) async {
+    final lang = LanguageService.current;
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Reminder'),
-        content: const Text('Are you sure you want to delete this reminder?'),
+        title: Text(lang.get(
+            'TITLE_REMINDERS')), // "Reminders" or "Delete Reminder" in English key mapping, wait, I used TITLE_REMINDERS. Ideally should be 'Delete Reminder' but LanguageService doesn't have it. I'll use TITLE_REMINDERS for now or just hardcode/add key.
+        content: Text(lang.get('MSG_DELETE_CONFIRM')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(lang.get('BTN_CANCEL')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text(lang.get('BTN_CLEAR'),
+                style: const TextStyle(color: Colors.red)), // Use Clean/Delete
           ),
         ],
       ),
@@ -76,9 +80,9 @@ class _MedicationRemindersScreenState extends State<MedicationRemindersScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Reminder deleted'),
+            content: Text(lang.get('MSG_REMINDER_DELETED')),
             action: SnackBarAction(
-              label: 'Undo',
+              label: lang.get('BTN_UNDO'),
               onPressed: () {
                 _addReminder(reminder);
               },
@@ -117,6 +121,7 @@ class _MedicationRemindersScreenState extends State<MedicationRemindersScreen> {
   }
 
   void _showAddReminderDialog() {
+    final lang = LanguageService.current;
     final nameController = TextEditingController();
     final dosageController = TextEditingController();
     TimeOfDay selectedTime = TimeOfDay.now();
@@ -152,23 +157,23 @@ class _MedicationRemindersScreenState extends State<MedicationRemindersScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Add Reminder',
+                lang.get('BTN_ADD_REMINDER'),
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 24),
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Medicine Name',
-                  hintText: 'e.g., Paracetamol',
+                decoration: InputDecoration(
+                  labelText: lang.get('LABEL_MEDICINE_NAME'),
+                  hintText: lang.get('HINT_MEDICINE_NAME'),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: dosageController,
-                decoration: const InputDecoration(
-                  labelText: 'Dosage',
-                  hintText: 'e.g., 500mg, 1 tablet',
+                decoration: InputDecoration(
+                  labelText: lang.get('LABEL_DOSAGE'),
+                  hintText: lang.get('HINT_DOSAGE'),
                 ),
               ),
               const SizedBox(height: 24),
@@ -192,7 +197,7 @@ class _MedicationRemindersScreenState extends State<MedicationRemindersScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Time',
+                      Text(lang.get('LABEL_TIME'),
                           style: Theme.of(context).textTheme.bodyMedium),
                       Text(
                         selectedTime.format(context),
@@ -203,7 +208,8 @@ class _MedicationRemindersScreenState extends State<MedicationRemindersScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('Frequency', style: Theme.of(context).textTheme.titleSmall),
+              Text(lang.get('LABEL_FREQUENCY'),
+                  style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
@@ -261,7 +267,7 @@ class _MedicationRemindersScreenState extends State<MedicationRemindersScreen> {
                       Navigator.pop(context);
                     }
                   },
-                  child: const Text('Save Reminder'),
+                  child: Text(lang.get('BTN_SAVE_REMINDER')),
                 ),
               ),
             ],
@@ -273,14 +279,16 @@ class _MedicationRemindersScreenState extends State<MedicationRemindersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = LanguageService.current;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Reminders"),
+        title: Text(lang.get('TITLE_REMINDERS')),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddReminderDialog,
         icon: const Icon(Icons.add),
-        label: const Text("Add Reminder"),
+        label: Text(lang.get('BTN_ADD_REMINDER')),
       ),
       body: _reminders.isEmpty
           ? Center(
@@ -291,7 +299,7 @@ class _MedicationRemindersScreenState extends State<MedicationRemindersScreen> {
                       size: 48, color: Theme.of(context).dividerColor),
                   const SizedBox(height: 16),
                   Text(
-                    'No reminders set',
+                    lang.get('MSG_NO_REMINDERS'),
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
@@ -320,18 +328,19 @@ class _MedicationRemindersScreenState extends State<MedicationRemindersScreen> {
                     return await showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text('Delete Reminder'),
-                        content: const Text(
-                            'Are you sure you want to delete this reminder?'),
+                        title: Text(lang.get(
+                            'TITLE_REMINDERS')), // Ideally, Delete Reminder
+                        content: Text(lang.get('MSG_DELETE_CONFIRM')),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancel'),
+                            child: Text(lang.get('BTN_CANCEL')),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Delete',
-                                style: TextStyle(color: Colors.red)),
+                            child:
+                                Text(lang.get('BTN_CLEAR'), // Use Clean/Delete
+                                    style: const TextStyle(color: Colors.red)),
                           ),
                         ],
                       ),

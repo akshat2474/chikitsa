@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/image_upload_service.dart';
+import '../services/language_service.dart';
 
 class ImageUploadScreen extends StatefulWidget {
   const ImageUploadScreen({super.key});
@@ -85,14 +86,17 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = LanguageService.current;
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("Medical Imaging"),
+        title: Text(lang.get('TITLE_IMAGE')),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -104,8 +108,9 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.black, width: 2),
+                  color: theme.colorScheme.surface,
+                  border:
+                      Border.all(color: theme.colorScheme.onSurface, width: 2),
                 ),
                 child: _selectedImage != null
                     ? Image.file(_selectedImage!, fit: BoxFit.contain)
@@ -113,17 +118,14 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.add_photo_alternate_outlined,
-                              size: 64, color: Colors.black),
+                              size: 64, color: theme.colorScheme.onSurface),
                           const SizedBox(height: 16),
                           Text(
-                            "UPLOAD PHOTO",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            lang.get('STATUS_SELECT').toUpperCase(),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -135,15 +137,16 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
             if (_isUploading || _uploadProgress > 0) ...[
               LinearProgressIndicator(
                 value: _uploadProgress,
-                backgroundColor: Colors.grey.withValues(alpha: 0.2),
-                color: Colors.black,
+                backgroundColor:
+                    theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                color: theme.colorScheme.onSurface,
                 minHeight: 4,
                 borderRadius: BorderRadius.circular(2),
               ),
               const SizedBox(height: 8),
               Text(
                 _statusMessage,
-                style: Theme.of(context).textTheme.bodySmall,
+                style: theme.textTheme.bodySmall,
               ),
               const SizedBox(height: 24),
             ],
@@ -154,7 +157,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                   child: _buildActionButton(
                     context: context,
                     icon: Icons.camera_alt_outlined,
-                    label: "Camera",
+                    label: lang.get('BTN_CAMERA'),
                     onPressed: _isUploading
                         ? null
                         : () => _pickImage(ImageSource.camera),
@@ -165,7 +168,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                   child: _buildActionButton(
                     context: context,
                     icon: Icons.photo_library_outlined,
-                    label: "Gallery",
+                    label: lang.get('BTN_GALLERY'),
                     onPressed: _isUploading
                         ? null
                         : () => _pickImage(ImageSource.gallery),
@@ -185,22 +188,22 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                     ? _startUpload
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
+                  backgroundColor: theme.colorScheme.onSurface,
+                  foregroundColor: theme.colorScheme.surface,
                   elevation: 0,
                   shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero,
                   ),
                 ),
                 child: _isUploading
-                    ? const SizedBox(
+                    ? SizedBox(
                         height: 24,
                         width: 24,
                         child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2))
-                    : const Text(
-                        "UPLOAD SECURELY",
-                        style: TextStyle(
+                            color: theme.colorScheme.surface, strokeWidth: 2))
+                    : Text(
+                        lang.get('BTN_UPLOAD_SECURE').toUpperCase(),
+                        style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 1.0),
@@ -219,15 +222,16 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
     required String label,
     required VoidCallback? onPressed,
   }) {
+    final theme = Theme.of(context);
     return OutlinedButton.icon(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.black,
-        side: const BorderSide(color: Colors.black, width: 2),
+        foregroundColor: theme.colorScheme.onSurface,
+        side: BorderSide(color: theme.colorScheme.onSurface, width: 2),
         padding: const EdgeInsets.symmetric(vertical: 20),
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       ),
-      icon: Icon(icon, size: 20, color: Colors.black),
+      icon: Icon(icon, size: 20, color: theme.colorScheme.onSurface),
       label: Text(label.toUpperCase(),
           style: const TextStyle(fontWeight: FontWeight.bold)),
     );

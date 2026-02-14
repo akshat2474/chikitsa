@@ -1,31 +1,23 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:fixnum/fixnum.dart';
-import 'package:zstandard/zstandard.dart'; 
+import 'package:zstandard/zstandard.dart';
 
 import '../proto/patient.pb.dart';
 
 class ProtobufZstdHelper {
-  static Uint8List? _dictionaryData;
   static bool _isInitialized = false;
-  static Zstandard? _zstd; 
+  static Zstandard? _zstd;
 
   static Future<void> initialize() async {
     if (_isInitialized) return;
-    
-    try {
-      final byteData = await rootBundle.load('assets/patient_dict_32k.zst');
-      _dictionaryData = byteData.buffer.asUint8List();
-    } catch (e) {
-      print('Dictionary load skipped: $e');
-    }
 
     _zstd = Zstandard();
     _isInitialized = true;
   }
 
-  static Future<ProtobufCompressionResult> encodeData(Map<String, dynamic> data) async {
+  static Future<ProtobufCompressionResult> encodeData(
+      Map<String, dynamic> data) async {
     if (!_isInitialized || _zstd == null) {
       await initialize();
     }
@@ -49,17 +41,17 @@ class ProtobufZstdHelper {
     final protobufSize = protobufBytes.length;
 
     final compressed = await _zstd!.compress(protobufBytes, 3);
-    
+
     final compressedSize = compressed!.length;
     final useCompression = compressedSize > 0 && compressedSize < protobufSize;
-    
+
     final finalPayload = useCompression
         ? Uint8List.fromList([0x01, ...compressed])
         : Uint8List.fromList([0x00, ...protobufBytes]);
 
     final jsonString = jsonEncode(data);
     final jsonSize = utf8.encode(jsonString).length;
-    final compressionRatio = 
+    final compressionRatio =
         ((jsonSize - finalPayload.length) / jsonSize * 100).toStringAsFixed(1);
 
     return ProtobufCompressionResult(
@@ -113,34 +105,48 @@ class ProtobufZstdHelper {
   }
 
   static String bytesToBase64(Uint8List bytes) => base64Encode(bytes);
-  static Uint8List base64ToBytes(String base64String) => base64Decode(base64String);
+  static Uint8List base64ToBytes(String base64String) =>
+      base64Decode(base64String);
 
   static PatientData_Gender _mapGender(String gender) {
     switch (gender.toLowerCase()) {
-      case 'male': return PatientData_Gender.GENDER_MALE;
-      case 'female': return PatientData_Gender.GENDER_FEMALE;
-      case 'other': return PatientData_Gender.GENDER_OTHER;
-      default: return PatientData_Gender.GENDER_UNKNOWN;
+      case 'male':
+        return PatientData_Gender.GENDER_MALE;
+      case 'female':
+        return PatientData_Gender.GENDER_FEMALE;
+      case 'other':
+        return PatientData_Gender.GENDER_OTHER;
+      default:
+        return PatientData_Gender.GENDER_UNKNOWN;
     }
   }
 
   static String _unmapGender(PatientData_Gender gender) {
     switch (gender) {
-      case PatientData_Gender.GENDER_MALE: return 'Male';
-      case PatientData_Gender.GENDER_FEMALE: return 'Female';
-      case PatientData_Gender.GENDER_OTHER: return 'Other';
-      default: return 'Unknown';
+      case PatientData_Gender.GENDER_MALE:
+        return 'Male';
+      case PatientData_Gender.GENDER_FEMALE:
+        return 'Female';
+      case PatientData_Gender.GENDER_OTHER:
+        return 'Other';
+      default:
+        return 'Unknown';
     }
   }
 
-  static int _parsePhone(String phone) => int.tryParse(phone.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
-  
+  static int _parsePhone(String phone) =>
+      int.tryParse(phone.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
+
   static int _toUnixMs(String isoString) {
-    try { return DateTime.parse(isoString).millisecondsSinceEpoch; } 
-    catch (e) { return DateTime.now().millisecondsSinceEpoch; }
+    try {
+      return DateTime.parse(isoString).millisecondsSinceEpoch;
+    } catch (e) {
+      return DateTime.now().millisecondsSinceEpoch;
+    }
   }
 
-  static String _fromUnixMs(int unixMs) => DateTime.fromMillisecondsSinceEpoch(unixMs).toIso8601String();
+  static String _fromUnixMs(int unixMs) =>
+      DateTime.fromMillisecondsSinceEpoch(unixMs).toIso8601String();
 }
 
 class ProtobufCompressionResult {

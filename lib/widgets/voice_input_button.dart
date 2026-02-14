@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class VoiceInputButton extends StatefulWidget {
   final Function(String result) onTextReceived;
@@ -18,7 +16,7 @@ class VoiceInputButton extends StatefulWidget {
 }
 
 class _VoiceInputButtonState extends State<VoiceInputButton> {
-  late stt.SpeechToText _speech;
+  // removed unused stt variables since we are simulating for now
   bool _isListening = false;
   bool _isTranslating = false;
 
@@ -30,78 +28,10 @@ class _VoiceInputButtonState extends State<VoiceInputButton> {
   @override
   void initState() {
     super.initState();
-    _speech = stt.SpeechToText();
   }
 
   Future<void> _toggleListening() async {
     await _simulateVoiceInput(widget.simulationText);
-    return;
-
-    // if (_isListening) {
-    //   await _speech.stop();
-    //   setState(() => _isListening = false);
-    //   return;
-    // }
-
-    // var status = await Permission.microphone.request();
-    // if (!status.isGranted) {
-    //   print("Permission denied");
-    //   return;
-    // }
-
-    // bool available = await _speech.initialize(
-    //   onError: (val) {
-    //     print('Speech Error: ${val.errorMsg}');
-    //     setState(() => _isListening = false);
-    //   },
-    //   onStatus: (val) => print('Speech Status: $val'),
-    // );
-
-    // if (available) {
-    //   var locales = await _speech.locales();
-    //   var hasHindi = locales.any((l) => l.localeId == 'hi_IN');
-    //   print("Device supports Hindi: $hasHindi");
-    //   if (!hasHindi) {
-    //     print("Available Locales: ${locales.map((l) => l.localeId).join(', ')}");
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       const SnackBar(content: Text('Hindi language pack missing on this device')),
-    //     );
-    //   }
-
-    //   setState(() => _isListening = true);
-
-    //   _speech.listen(
-    //     localeId: 'hi_IN',
-    //     listenFor: const Duration(seconds: 30),
-    //     pauseFor: const Duration(seconds: 5),
-    //     partialResults: true, // IMPORTANT: Get results as you speak
-    //     onResult: (val) async {
-    //       print("Heard: ${val.recognizedWords}"); // You should see this log now
-
-    //       if (val.finalResult) {
-    //         setState(() {
-    //           _isListening = false;
-    //           _isTranslating = true;
-    //         });
-
-    //         try {
-    //           if (val.recognizedWords.isNotEmpty) {
-    //             final String translation =
-    //                 await _onDeviceTranslator.translateText(val.recognizedWords);
-    //             print("Translated: $translation");
-    //             widget.onTextReceived(translation);
-    //           }
-    //         } catch (e) {
-    //           print("Translation Error: $e");
-    //         }
-
-    //         if(mounted) setState(() => _isTranslating = false);
-    //       }
-    //     },
-    //   );
-    // } else {
-    //   print("Speech initialization failed.");
-    // }
   }
 
   Future<void> _simulateVoiceInput(String mockHindiText) async {

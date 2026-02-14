@@ -1,3 +1,4 @@
+import 'package:chikitsa/services/language_service.dart';
 import 'package:flutter/material.dart';
 import 'package:chikitsa/screens/home_screen.dart';
 
@@ -40,6 +41,8 @@ class _ChikitsaSplashScreenState extends State<ChikitsaSplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = LanguageService.current;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -53,7 +56,7 @@ class _ChikitsaSplashScreenState extends State<ChikitsaSplashScreen> {
               Container(
                 width: double.infinity,
                 height: 4,
-                color: Colors.black,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
 
               Expanded(
@@ -61,7 +64,7 @@ class _ChikitsaSplashScreenState extends State<ChikitsaSplashScreen> {
                   child: FittedBox(
                     fit: BoxFit.contain, // Fill width
                     child: Text(
-                      'CHIKITSA',
+                      lang.get('BRAND'),
                       style: Theme.of(context).textTheme.displayLarge,
                     ),
                   ),
@@ -73,7 +76,7 @@ class _ChikitsaSplashScreenState extends State<ChikitsaSplashScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'HEALTH INTELLIGENCE',
+                    lang.get('TAGLINE'),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -82,7 +85,7 @@ class _ChikitsaSplashScreenState extends State<ChikitsaSplashScreen> {
                   Container(
                     width: double.infinity,
                     height: 4,
-                    color: Colors.black,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ],
               )

@@ -1,3 +1,4 @@
+import 'package:chikitsa/services/language_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -41,20 +42,22 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
   }
 
   Future<void> _clearHistory() async {
+    final lang = LanguageService.current;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Clear History'),
-        content: const Text(
-            'Are you sure you want to clear all assessment history?'),
+        title: Text(lang.get('BTN_CLEAR')),
+        content: Text(lang.get('MSG_CLEAR_CONFIRM')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            child: Text(lang.get('BTN_CANCEL'),
+                style: const TextStyle(color: Colors.grey)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Clear', style: TextStyle(color: Colors.red)),
+            child: Text(lang.get('BTN_CLEAR'),
+                style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -77,6 +80,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
   }
 
   void _showDetailedReport(Map<String, dynamic> assessment) {
+    final lang = LanguageService.current;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -101,7 +105,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Assessment Details',
+                    lang.get('TITLE_HISTORY'),
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   IconButton(
@@ -115,28 +119,29 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(24),
                 children: [
-                  _buildSection('Patient Data'),
-                  _buildDetailRow('ID', assessment['patient_id']),
-                  _buildDetailRow('Name', assessment['patient_name']),
-                  _buildDetailRow('Age', assessment['age']),
-                  _buildDetailRow('Gender', assessment['gender']),
-                  _buildDetailRow('Phone', assessment['phone']),
-                  const SizedBox(height: 24),
-                  _buildSection('Vitals'),
+                  _buildSection(lang.get('LABEL_PATIENT_DATA')),
                   _buildDetailRow(
-                      'Temperature',
+                      lang.get('LABEL_NAME'), assessment['patient_name']),
+                  _buildDetailRow(lang.get('LABEL_AGE'), assessment['age']),
+                  _buildDetailRow(
+                      lang.get('LABEL_GENDER'), assessment['gender']),
+                  _buildDetailRow(lang.get('LABEL_PHONE'), assessment['phone']),
+                  const SizedBox(height: 24),
+                  _buildSection(lang.get('LABEL_VITALS')),
+                  _buildDetailRow(
+                      lang.get('LABEL_TEMP'),
                       assessment['temperature'] != null
                           ? '${assessment['temperature']}°C'
                           : '-'),
                   _buildDetailRow(
-                      'Heart Rate',
+                      'Heart Rate', // TODO: Add key if needed or keep English
                       assessment['heart_rate'] != null
                           ? '${assessment['heart_rate']} bpm'
                           : '-'),
-                  _buildDetailRow(
-                      'Blood Pressure', assessment['blood_pressure'] ?? '-'),
+                  _buildDetailRow(lang.get('LABEL_BP'),
+                      assessment['blood_pressure'] ?? '-'),
                   const SizedBox(height: 24),
-                  _buildSection('Symptoms'),
+                  _buildSection(lang.get('LABEL_SYMPTOMS')),
                   if (assessment['symptoms'] != null)
                     Wrap(
                       spacing: 8,
@@ -155,7 +160,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                   else
                     Text('None', style: Theme.of(context).textTheme.bodyMedium),
                   const SizedBox(height: 24),
-                  _buildSection('Transmission Status'),
+                  _buildSection(lang.get('LABEL_TRANSMISSION')),
                   Row(
                     children: [
                       Icon(
@@ -170,8 +175,8 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                       const SizedBox(width: 8),
                       Text(
                         (assessment['send_success'] == true)
-                            ? 'Success'
-                            : 'Failed',
+                            ? lang.get('STATUS_SUCCESS')
+                            : lang.get('STATUS_FAILED'),
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
@@ -216,9 +221,11 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = LanguageService.current;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("History"),
+        title: Text(lang.get('TITLE_HISTORY')),
         actions: [
           if (_assessments.isNotEmpty)
             IconButton(
@@ -263,7 +270,7 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen> {
                   child: _assessments.isEmpty
                       ? Center(
                           child: Text(
-                            'No history available',
+                            lang.get('MSG_NO_HISTORY'),
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         )

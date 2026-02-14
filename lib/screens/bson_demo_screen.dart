@@ -3,6 +3,7 @@ import 'package:chikitsa/screens/image_upload_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/language_service.dart';
 import '../services/text_service.dart';
 import '../widgets/voice_input_button.dart';
 
@@ -144,7 +145,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
   Future<void> _sendData() async {
     // strict validation
     if (!_isImageUploaded) {
-      _showError('You must upload a medical photo first.');
+      _showError(LanguageService.current.get('ERR_PHOTO_REQ'));
       return;
     }
 
@@ -224,26 +225,33 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = LanguageService.current;
+    final theme = Theme.of(context);
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('New Entry'),
+        title: Text(lang.get('TITLE_ASSESSMENT')),
         centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isLoading ? null : _sendData,
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: theme.colorScheme.onSurface,
+        foregroundColor: theme.colorScheme.surface,
         elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
         label: _isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                    color: Colors.white, strokeWidth: 2))
-            : const Text("Submit Vitals"),
+            ? SizedBox(
+                width: 24,
+                height: 24,
+                child:
+                    CircularProgressIndicator(color: theme.colorScheme.surface),
+              )
+            : Text(lang.get('BTN_SUBMIT').toUpperCase(),
+                style: const TextStyle(
+                    fontWeight: FontWeight.w900, letterSpacing: 1.0)),
         icon: _isLoading ? null : const Icon(Icons.arrow_forward),
       ),
       body: SafeArea(
@@ -252,68 +260,28 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Patient Details Section
               Text(
-                'Patient Details',
-                style: Theme.of(context).textTheme.displayMedium,
+                lang.get('SECTION_PATIENT'),
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Enter patient information for 2G transmission.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-
-              const SizedBox(height: 48),
-
-              _buildTextField(
-                controller: _patientIdController,
-                label: 'Patient ID',
-                hint: 'Auto-generated if empty',
-                simulationText: "१२३",
-              ),
-
               const SizedBox(height: 24),
 
               _buildTextField(
                 controller: _patientNameController,
-                label: 'Full Name',
-                hint: 'e.g. Akshat Singh',
-                simulationText: "अक्षत सिंह",
+                label: lang.get('LABEL_NAME'),
+                hint: lang.get('HINT_NAME'),
+                simulationText: "अमन",
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]'))
                 ],
               ),
-
-              const SizedBox(height: 24),
-
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: _buildTextField(
-                      controller: _patientAgeController,
-                      label: 'Age',
-                      hint: 'Years',
-                      keyboardType: TextInputType.number,
-                      simulationText: "२५",
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(3)
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                  Expanded(
-                    child: _buildGenderDropdown(),
-                  ),
-                ],
-              ),
-
               const SizedBox(height: 24),
 
               _buildTextField(
                 controller: _phoneController,
-                label: 'Phone Number',
-                hint: '+91 9876543210',
+                label: lang.get('LABEL_PHONE'),
+                hint: lang.get('HINT_PHONE'),
                 keyboardType: TextInputType.phone,
                 simulationText: "९८७६५४३२१०",
                 inputFormatters: [
@@ -321,70 +289,86 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                   LengthLimitingTextInputFormatter(15)
                 ],
               ),
-
-              const SizedBox(height: 48),
-
-              Text(
-                'Vitals & Symptoms',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-
-              const SizedBox(height: 24),
-
-              _buildTextField(
-                controller: _symptomsController,
-                label: 'Symptoms',
-                hint: 'Describe symptoms...',
-                maxLines: 3,
-                simulationText: "बुखार और खांसी",
-              ),
-
               const SizedBox(height: 24),
 
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: _buildTextField(
-                      controller: _temperatureController,
-                      label: 'Temp (°C)',
-                      hint: '37.5',
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      simulationText: "३७.५",
+                      controller: _patientAgeController,
+                      label: lang.get('LABEL_AGE'),
+                      hint: lang.get('HINT_AGE'),
+                      simulationText: "२५",
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     ),
                   ),
-                  const SizedBox(width: 24),
+                  const SizedBox(width: 16),
                   Expanded(
-                    child: _buildTextField(
-                      controller: _heartRateController,
-                      label: 'Heart Rate',
-                      hint: 'BPM',
-                      keyboardType: TextInputType.number,
-                      simulationText: "७२",
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(3)
-                      ],
-                    ),
+                    child: _buildGenderDropdown(),
                   ),
                 ],
               ),
 
+              const SizedBox(height: 48),
+
+              // Vitals Section
+              Text(
+                lang.get('SECTION_VITALS'),
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               const SizedBox(height: 24),
 
               _buildTextField(
-                controller: _bpController,
-                label: 'Blood Pressure',
-                hint: '120/80',
-                simulationText: "१२०/८०",
+                controller: _symptomsController,
+                label: lang.get('LABEL_SYMPTOMS'),
+                hint: lang.get('HINT_SYMPTOMS'),
+                maxLines: 3,
+                simulationText: lang.get('SIM_SYMPTOMS'),
+              ),
+              const SizedBox(height: 24),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _bpController,
+                      label: lang.get('LABEL_BP'),
+                      hint: lang.get('HINT_BP'),
+                      simulationText: lang.get('SIM_BP'),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField(
+                      controller: _temperatureController,
+                      label: lang.get('LABEL_TEMP'),
+                      hint: lang.get('HINT_TEMP'),
+                      keyboardType: TextInputType.number,
+                      simulationText: lang.get('SIM_TEMP'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              _buildTextField(
+                controller: _heartRateController,
+                label: 'Heart Rate', // TODO: Add key
+                hint: 'BPM',
+                keyboardType: TextInputType.number,
+                simulationText: "७२",
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(3)
+                ],
               ),
 
               const SizedBox(height: 32),
 
               // Mandatory Image Upload Section
               Text(
-                'IMAGE OF AILMENT',
+                lang.get('HEADER_PHOTO'),
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 16),
@@ -407,8 +391,11 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: _isImageUploaded ? Colors.black : Colors.white,
-                    border: Border.all(color: Colors.black, width: 2),
+                    color: _isImageUploaded
+                        ? theme.colorScheme.onSurface
+                        : theme.colorScheme.surface,
+                    border: Border.all(
+                        color: theme.colorScheme.onSurface, width: 2),
                   ),
                   child: Column(
                     children: [
@@ -417,29 +404,35 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                             ? Icons.check_circle
                             : Icons.upload_file,
                         size: 40,
-                        color: _isImageUploaded ? Colors.white : Colors.black,
+                        color: _isImageUploaded
+                            ? theme.colorScheme.surface
+                            : theme.colorScheme.onSurface,
                       ),
                       const SizedBox(height: 16),
                       Text(
                         _isImageUploaded
-                            ? 'REPORT ATTACHED'
-                            : 'UPLOAD PHOTO',
+                            ? lang.get('STATUS_ATTACHED')
+                            : lang.get('BTN_UPLOAD'),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
-                          color: _isImageUploaded ? Colors.white : Colors.black,
+                          color: _isImageUploaded
+                              ? theme.colorScheme.surface
+                              : theme.colorScheme.onSurface,
                           letterSpacing: 1.0,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         _isImageUploaded
-                            ? 'Ready for submission'
-                            : '(Mandatory)',
+                            ? lang.get('STATUS_READY')
+                            : lang.get('STATUS_MANDATORY'),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: _isImageUploaded ? Colors.white70 : Colors.red,
+                          color: _isImageUploaded
+                              ? theme.colorScheme.surface.withValues(alpha: 0.7)
+                              : theme.colorScheme.error,
                         ),
                       ),
                     ],
@@ -502,11 +495,13 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
   }
 
   Widget _buildGenderDropdown() {
+    final lang = LanguageService.current;
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Gender',
+          lang.get('LABEL_GENDER'),
           style: Theme.of(context)
               .textTheme
               .labelLarge
@@ -514,17 +509,20 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
+          value: _selectedGender,
           decoration: const InputDecoration(
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
-          style: Theme.of(context).textTheme.bodyLarge,
-          icon: const Icon(Icons.arrow_drop_down, color: Colors.black),
-          items: ['Male', 'Female', 'Other'].map((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
+          style: theme.textTheme.bodyLarge,
+          icon: Icon(Icons.arrow_drop_down, color: theme.iconTheme.color),
+          dropdownColor: theme.cardColor,
+          items: [
+            DropdownMenuItem(value: 'Male', child: Text(lang.get('OPT_MALE'))),
+            DropdownMenuItem(
+                value: 'Female', child: Text(lang.get('OPT_FEMALE'))),
+            DropdownMenuItem(
+                value: 'Other', child: Text(lang.get('OPT_OTHER'))),
+          ],
           onChanged: (String? newValue) {
             setState(() {
               _selectedGender = newValue!;

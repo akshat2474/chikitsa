@@ -25,6 +25,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
 
   SmsSendResult? _lastResult;
   bool _isLoading = false;
+  bool _isImageUploaded = false;
   String _selectedGender = 'Male';
 
   @override
@@ -142,6 +143,11 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
 
   Future<void> _sendData() async {
     // strict validation
+    if (!_isImageUploaded) {
+      _showError('You must upload a medical photo first.');
+      return;
+    }
+
     final phoneError = _validatePhone(_phoneController.text);
     if (phoneError != null) {
       _showError(phoneError);
@@ -225,19 +231,6 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
         centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const ImageUploadScreen()),
-              );
-            },
-            icon: const Icon(Icons.add_a_photo_outlined),
-            tooltip: "Upload Image",
-          ),
-        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isLoading ? null : _sendData,
@@ -385,6 +378,73 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 label: 'Blood Pressure',
                 hint: '120/80',
                 simulationText: "१२०/८०",
+              ),
+
+              const SizedBox(height: 32),
+
+              // Mandatory Image Upload Section
+              Text(
+                'IMAGE OF AILMENT',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 16),
+
+              InkWell(
+                onTap: () async {
+                  final result = await Navigator.push<bool>(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ImageUploadScreen()),
+                  );
+
+                  if (result == true) {
+                    setState(() {
+                      _isImageUploaded = true;
+                    });
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: _isImageUploaded ? Colors.black : Colors.white,
+                    border: Border.all(color: Colors.black, width: 2),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        _isImageUploaded
+                            ? Icons.check_circle
+                            : Icons.upload_file,
+                        size: 40,
+                        color: _isImageUploaded ? Colors.white : Colors.black,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        _isImageUploaded
+                            ? 'REPORT ATTACHED'
+                            : 'UPLOAD PHOTO',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: _isImageUploaded ? Colors.white : Colors.black,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _isImageUploaded
+                            ? 'Ready for submission'
+                            : '(Mandatory)',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: _isImageUploaded ? Colors.white70 : Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
 
               const SizedBox(height: 80), // Space for FAB

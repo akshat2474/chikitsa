@@ -59,6 +59,13 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
         _uploadProgress = 1.0;
       });
       _showSnackBar("Image uploaded successfully!");
+
+      // Return success to previous screen after short delay
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
+          Navigator.pop(context, true);
+        }
+      });
     } catch (e) {
       setState(() => _statusMessage = "Upload Failed");
       _showSnackBar("Upload failed: $e", isError: true);
@@ -109,7 +116,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                               size: 64, color: Colors.black),
                           const SizedBox(height: 16),
                           Text(
-                            "SELECT X-RAY OR REPORT",
+                            "UPLOAD PHOTO",
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium

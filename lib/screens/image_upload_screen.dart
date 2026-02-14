@@ -79,12 +79,13 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.black,
         title: const Text("Medical Imaging"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -96,10 +97,9 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(16),
-                  border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                  border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
                 ),
                 child: _selectedImage != null
                     ? ClipRRect(
@@ -109,15 +109,18 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.add_photo_alternate,
+                          Icon(Icons.add_photo_alternate_outlined,
                               size: 64,
-                              color: Colors.white.withValues(alpha: 0.2)),
+                              color: Colors.grey.withValues(alpha: 0.3)),
                           const SizedBox(height: 16),
                           Text(
-                            "No image selected",
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.4),
-                            ),
+                            "Select an X-Ray or Report",
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Colors.grey,
+                                ),
                           ),
                         ],
                       ),
@@ -129,15 +132,15 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
             if (_isUploading || _uploadProgress > 0) ...[
               LinearProgressIndicator(
                 value: _uploadProgress,
-                backgroundColor: Colors.white.withValues(alpha: 0.1),
-                color: const Color(0xFFE8997F),
-                minHeight: 8,
-                borderRadius: BorderRadius.circular(4),
+                backgroundColor: Colors.grey.withValues(alpha: 0.2),
+                color: Colors.black,
+                minHeight: 4,
+                borderRadius: BorderRadius.circular(2),
               ),
               const SizedBox(height: 8),
               Text(
                 _statusMessage,
-                style: const TextStyle(color: Colors.white70, fontSize: 12),
+                style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 24),
             ],
@@ -146,7 +149,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
               children: [
                 Expanded(
                   child: _buildActionButton(
-                    icon: Icons.camera_alt,
+                    icon: Icons.camera_alt_outlined,
                     label: "Camera",
                     onPressed: _isUploading
                         ? null
@@ -156,7 +159,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildActionButton(
-                    icon: Icons.photo_library,
+                    icon: Icons.photo_library_outlined,
                     label: "Gallery",
                     onPressed: _isUploading
                         ? null
@@ -177,10 +180,11 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                     ? _startUpload
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE8997F),
-                  foregroundColor: Colors.black,
-                  disabledBackgroundColor: Colors.white.withValues(alpha: 0.1),
-                  disabledForegroundColor: Colors.white.withValues(alpha: 0.2),
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  disabledForegroundColor: Colors.grey.shade500,
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -190,7 +194,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                         height: 24,
                         width: 24,
                         child: CircularProgressIndicator(
-                            color: Colors.black, strokeWidth: 2))
+                            color: Colors.white, strokeWidth: 2))
                     : const Text(
                         "Upload Securely",
                         style: TextStyle(
@@ -212,12 +216,12 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
     return OutlinedButton.icon(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.white,
-        side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+        foregroundColor: Colors.black,
+        side: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      icon: Icon(icon, size: 20, color: const Color(0xFFE8997F)),
+      icon: Icon(icon, size: 20, color: Colors.black),
       label: Text(label),
     );
   }

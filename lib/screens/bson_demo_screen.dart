@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:chikitsa/screens/image_upload_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/text_service.dart';
 import '../widgets/voice_input_button.dart';
 
@@ -20,14 +22,67 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
   final TextEditingController _temperatureController = TextEditingController();
   final TextEditingController _bpController = TextEditingController();
   final TextEditingController _heartRateController = TextEditingController();
-  
+
   SmsSendResult? _lastResult;
   bool _isLoading = false;
   String _selectedGender = 'Male';
-  
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPatientProfile();
+  }
+
+  /// Load saved patient details from SharedPreferences
+  Future<void> _loadPatientProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _patientIdController.text = prefs.getString('patient_id') ?? '';
+      _patientNameController.text = prefs.getString('patient_name') ?? '';
+      _patientAgeController.text = prefs.getString('patient_age') ?? '';
+      _selectedGender = prefs.getString('patient_gender') ?? 'Male';
+      _phoneController.text = prefs.getString('patient_phone') ?? '';
+    });
+  }
+
+  /// Save patient details to SharedPreferences for auto-fill
+  Future<void> _savePatientProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('patient_id', _patientIdController.text.trim());
+    await prefs.setString('patient_name', _patientNameController.text.trim());
+    await prefs.setString('patient_age', _patientAgeController.text.trim());
+    await prefs.setString('patient_gender', _selectedGender);
+    await prefs.setString('patient_phone', _phoneController.text.trim());
+  }
+
+  /// Save an assessment to history for the Activity History screen
+  Future<void> _saveAssessmentToHistory(
+      Map<String, dynamic> patientData, bool sendSuccess) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? historyJson = prefs.getString('assessment_history');
+
+    List<dynamic> history = [];
+    if (historyJson != null) {
+      history = jsonDecode(historyJson);
+    }
+
+    // Add send status to the data
+    final assessmentRecord = Map<String, dynamic>.from(patientData);
+    assessmentRecord['send_success'] = sendSuccess;
+
+    history.add(assessmentRecord);
+
+    // Keep only the last 50 assessments
+    if (history.length > 50) {
+      history = history.sublist(history.length - 50);
+    }
+
+    await prefs.setString('assessment_history', jsonEncode(history));
+  }
+
   Map<String, dynamic> _getPatientData() {
     List<String> symptoms = [];
-    
+
     if (_symptomsController.text.trim().isNotEmpty) {
       symptoms = _symptomsController.text
           .split(',')
@@ -35,48 +90,94 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
           .where((s) => s.isNotEmpty)
           .toList();
     }
-    
+
     return {
-      'patient_id': _patientIdController.text.trim().isNotEmpty 
-          ? _patientIdController.text.trim() 
+      'patient_id': _patientIdController.text.trim().isNotEmpty
+          ? _patientIdController.text.trim()
           : 'P${DateTime.now().millisecondsSinceEpoch}',
       'patient_name': _patientNameController.text.trim(),
-      'age': _patientAgeController.text.trim().isNotEmpty 
-          ? int.tryParse(_patientAgeController.text.trim()) ?? 0 
+      'age': _patientAgeController.text.trim().isNotEmpty
+          ? int.tryParse(_patientAgeController.text.trim()) ?? 0
           : 0,
       'gender': _selectedGender,
       'phone': _phoneController.text.trim(),
       'symptoms': symptoms,
-      'temperature': _temperatureController.text.trim().isNotEmpty 
-          ? double.tryParse(_temperatureController.text.trim()) ?? 0.0 
+      'temperature': _temperatureController.text.trim().isNotEmpty
+          ? double.tryParse(_temperatureController.text.trim()) ?? 0.0
           : 0.0,
       'blood_pressure': _bpController.text.trim(),
-      'heart_rate': _heartRateController.text.trim().isNotEmpty 
-          ? int.tryParse(_heartRateController.text.trim()) ?? 0 
+      'heart_rate': _heartRateController.text.trim().isNotEmpty
+          ? int.tryParse(_heartRateController.text.trim()) ?? 0
           : 0,
       'timestamp': DateTime.now().toIso8601String(),
-      'location': {'lat': 28.6139, 'lng': 77.2090}, 
+      'location': {'lat': 28.6139, 'lng': 77.2090},
     };
   }
 
+  String? _validatePhone(String? value) {
+    if (value == null || value.isEmpty) return 'Phone number is required';
+    if (!RegExp(r'^\+?[0-9]{10,13}$').hasMatch(value)) {
+      return 'Enter a valid phone number (10-13 digits)';
+    }
+    return null;
+  }
+
+  String? _validateName(String? value) {
+    if (value == null || value.isEmpty) return 'Name is required';
+    if (value.length < 3) return 'Name is too short';
+    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
+      return 'Name must contain only alphabets';
+    }
+    return null;
+  }
+
+  String? _validateAge(String? value) {
+    if (value == null || value.isEmpty) return null; // Age is optional
+    final age = int.tryParse(value);
+    if (age == null || age < 0 || age > 120) {
+      return 'Enter a valid age (0-120)';
+    }
+    return null;
+  }
+
   Future<void> _sendData() async {
-    if (_phoneController.text.isEmpty) {
-      _showError('Please enter phone number');
+    // strict validation
+    final phoneError = _validatePhone(_phoneController.text);
+    if (phoneError != null) {
+      _showError(phoneError);
       return;
     }
-    if (_patientNameController.text.isEmpty) {
-      _showError('Please enter patient name');
+
+    final nameError = _validateName(_patientNameController.text);
+    if (nameError != null) {
+      _showError(nameError);
       return;
     }
+
+    final ageError = _validateAge(_patientAgeController.text);
+    if (ageError != null) {
+      _showError(ageError);
+      return;
+    }
+
     if (_symptomsController.text.isEmpty) {
       _showError('Please enter at least one symptom');
       return;
     }
 
+    // Vitals validation (Simple range checks)
+    if (_temperatureController.text.isNotEmpty) {
+      final temp = double.tryParse(_temperatureController.text);
+      if (temp == null || temp < 30 || temp > 45) {
+        _showError('Temperature must be between 30°C and 45°C');
+        return;
+      }
+    }
+
     setState(() => _isLoading = true);
 
     final patientData = _getPatientData();
-    
+
     final result = await SmsService.sendWithBestCompression(
       phoneNumber: _phoneController.text,
       data: patientData,
@@ -86,7 +187,15 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
       _lastResult = result;
       _isLoading = false;
     });
-    
+
+    // Save patient profile for auto-fill on next visit
+    if (result.success) {
+      await _savePatientProfile();
+    }
+
+    // Save assessment to history (regardless of success/failure)
+    await _saveAssessmentToHistory(patientData, result.success);
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -97,7 +206,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
       );
     }
   }
-  
+
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -110,194 +219,176 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('Patient Data Transmission'),
+        title: const Text('New Entry'),
+        centerTitle: false,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const ImageUploadScreen()),
+              );
+            },
+            icon: const Icon(Icons.add_a_photo_outlined),
+            tooltip: "Upload Image",
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ImageUploadScreen()),
-        );
-      },
-      backgroundColor: const Color(0xFFE8997F),
-      foregroundColor: Colors.black,
-      icon: const Icon(Icons.add_a_photo),
-      label: const Text("Upload Image"),
-    ),
+        onPressed: _isLoading ? null : _sendData,
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        label: _isLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                    color: Colors.white, strokeWidth: 2))
+            : const Text("Submit Vitals"),
+        icon: _isLoading ? null : const Icon(Icons.arrow_forward),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Patient Information',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
+              Text(
+                'Patient Details',
+                style: Theme.of(context).textTheme.displayMedium,
               ),
               const SizedBox(height: 8),
               Text(
-                'Fill patient details for 2G transmission',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white.withValues(alpha: .6),
-                ),
+                'Enter patient information for 2G transmission.',
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
-              
-              const SizedBox(height: 32),
-              
+
+              const SizedBox(height: 48),
+
               _buildTextField(
                 controller: _patientIdController,
-                label: 'Patient ID (Optional)',
+                label: 'Patient ID',
                 hint: 'Auto-generated if empty',
-                icon: Icons.badge,
                 simulationText: "१२३",
               ),
-              
-              const SizedBox(height: 16),
-              
+
+              const SizedBox(height: 24),
+
               _buildTextField(
                 controller: _patientNameController,
-                label: 'Patient Name *',
-                hint: 'Enter full name',
-                icon: Icons.person,
+                label: 'Full Name',
+                hint: 'e.g. Akshat Singh',
                 simulationText: "अक्षत सिंह",
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]'))
+                ],
               ),
-              
-              const SizedBox(height: 16),
-              
+
+              const SizedBox(height: 24),
+
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: _buildTextField(
                       controller: _patientAgeController,
                       label: 'Age',
                       hint: 'Years',
-                      icon: Icons.calendar_today,
                       keyboardType: TextInputType.number,
                       simulationText: "२५",
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(3)
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 24),
                   Expanded(
                     child: _buildGenderDropdown(),
                   ),
                 ],
               ),
-              
-              const SizedBox(height: 16),
-              
+
+              const SizedBox(height: 24),
+
               _buildTextField(
                 controller: _phoneController,
-                label: 'Phone Number *',
+                label: 'Phone Number',
                 hint: '+91 9876543210',
-                icon: Icons.phone,
                 keyboardType: TextInputType.phone,
                 simulationText: "९८७६५४३२१०",
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9+]')),
+                  LengthLimitingTextInputFormatter(15)
+                ],
               ),
-              
+
+              const SizedBox(height: 48),
+
+              Text(
+                'Vitals & Symptoms',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+
               const SizedBox(height: 24),
-              
-              const Text(
-                'Medical Details',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              
-              const SizedBox(height: 16),
-              
+
               _buildTextField(
                 controller: _symptomsController,
-                label: 'Symptoms *',
-                hint: 'fever, cough, headache (comma-separated)',
-                icon: Icons.medical_services,
+                label: 'Symptoms',
+                hint: 'Describe symptoms...',
                 maxLines: 3,
                 simulationText: "बुखार और खांसी",
               ),
-              
-              const SizedBox(height: 16),
-              
+
+              const SizedBox(height: 24),
+
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: _buildTextField(
                       controller: _temperatureController,
-                      label: 'Temperature (°C)',
+                      label: 'Temp (°C)',
                       hint: '37.5',
-                      icon: Icons.thermostat,
-                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       simulationText: "३७.५",
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 24),
                   Expanded(
                     child: _buildTextField(
                       controller: _heartRateController,
                       label: 'Heart Rate',
-                      hint: '78 bpm',
-                      icon: Icons.favorite,
+                      hint: 'BPM',
                       keyboardType: TextInputType.number,
                       simulationText: "७२",
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(3)
+                      ],
                     ),
                   ),
                 ],
               ),
-              
-              const SizedBox(height: 16),
-              
+
+              const SizedBox(height: 24),
+
               _buildTextField(
                 controller: _bpController,
                 label: 'Blood Pressure',
                 hint: '120/80',
-                icon: Icons.monitor_heart,
                 simulationText: "१२०/८०",
               ),
-              
-              const SizedBox(height: 32),
-              
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _sendData,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE8997F),
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.black)
-                      : const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.cloud_upload, size: 20),
-                            SizedBox(width: 8),
-                            Text(
-                              'Send Patient Data',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-              
-              const SizedBox(height: 32),
-              
+
+              const SizedBox(height: 80), // Space for FAB
+
               if (_lastResult != null) _buildResults(_lastResult!),
             ],
           ),
@@ -310,90 +401,106 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
     required TextEditingController controller,
     required String label,
     required String hint,
-    required IconData icon,
     required String simulationText,
     TextInputType? keyboardType,
     int maxLines = 1,
+    List<TextInputFormatter>? inputFormatters,
   }) {
-    return TextField(
-      controller: controller,
-      style: const TextStyle(color: Colors.white),
-      keyboardType: keyboardType,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withValues(alpha:0.6)),
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.white.withValues(alpha:0.3)),
-        prefixIcon: Icon(icon, color: const Color(0xFFE8997F)),
-        suffixIcon: VoiceInputButton(
-          simulationText: simulationText,
-          onTextReceived: (englishText) {
-            if (label.contains('Symptoms') && controller.text.isNotEmpty) {
-              controller.text = "${controller.text}, $englishText";
-            } else {
-              controller.text = englishText;
-            }
-          },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelLarge,
         ),
-        filled: true,
-        fillColor: Colors.white.withValues(alpha:0.05),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha:0.2)),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: TextField(
+            controller: controller,
+            style: Theme.of(context).textTheme.bodyLarge,
+            keyboardType: keyboardType,
+            maxLines: maxLines,
+            inputFormatters: inputFormatters,
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: Theme.of(context).inputDecorationTheme.hintStyle,
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              contentPadding: const EdgeInsets.all(16),
+              suffixIcon: VoiceInputButton(
+                simulationText: simulationText,
+                onTextReceived: (englishText) {
+                  if (label.contains('Symptoms') &&
+                      controller.text.isNotEmpty) {
+                    controller.text = "${controller.text}, $englishText";
+                  } else {
+                    controller.text = englishText;
+                  }
+                },
+              ),
+            ),
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha:0.2)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE8997F)),
-        ),
-        alignLabelWithHint: maxLines > 1,
-      ),
+      ],
     );
   }
 
   Widget _buildGenderDropdown() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha:0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha:0.2)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedGender,
-          isExpanded: true,
-          dropdownColor: Colors.grey[900],
-          style: const TextStyle(color: Colors.white),
-          icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFE8997F)),
-          items: ['Male', 'Female', 'Other'].map((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Row(
-                children: [
-                  Icon(
-                    value == 'Male' ? Icons.male : 
-                    value == 'Female' ? Icons.female : Icons.transgender,
-                    color: const Color(0xFFE8997F),
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(value),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedGender = newValue!;
-            });
-          },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Gender',
+          style: Theme.of(context).textTheme.labelLarge,
         ),
-      ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedGender,
+              isExpanded: true,
+              dropdownColor: Theme.of(context).cardColor,
+              style: Theme.of(context).textTheme.bodyLarge,
+              icon: const Icon(Icons.arrow_drop_down, color: Colors.black),
+              items: ['Male', 'Female', 'Other'].map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Row(
+                    children: [
+                      Icon(
+                        value == 'Male'
+                            ? Icons.male
+                            : value == 'Female'
+                                ? Icons.female
+                                : Icons.transgender,
+                        color: Colors.black,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(value),
+                    ],
+                  ),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedGender = newValue!;
+                });
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -410,15 +517,14 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        
         Row(
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: result.success 
-                    ? Colors.green.withValues(alpha:0.2)
-                    : Colors.red.withValues(alpha:0.2),
+                color: result.success
+                    ? Colors.green.withValues(alpha: 0.2)
+                    : Colors.red.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: result.success ? Colors.green : Colors.red,
@@ -447,16 +553,18 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
             const SizedBox(width: 12),
             if (result.success)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8997F).withValues(alpha:0.2),
+                  color: const Color(0xFFE8997F).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: const Color(0xFFE8997F)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.auto_awesome, color: Color(0xFFE8997F), size: 16),
+                    const Icon(Icons.auto_awesome,
+                        color: Color(0xFFE8997F), size: 16),
                     const SizedBox(width: 6),
                     Text(
                       'Using ${result.compressionMethod}',
@@ -471,9 +579,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
               ),
           ],
         ),
-        
         const SizedBox(height: 16),
-        
         if (result.success) ...[
           Row(
             children: [
@@ -481,7 +587,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 child: _buildStatCard(
                   'Original',
                   '${result.originalJsonSize} bytes',
-                  Colors.red.withValues(alpha:0.2),
+                  Colors.red.withValues(alpha: 0.2),
                   Colors.red,
                 ),
               ),
@@ -490,22 +596,20 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 child: _buildStatCard(
                   'Sent',
                   '${result.bytesSentOverNetwork} bytes',
-                  Colors.green.withValues(alpha:0.2),
+                  Colors.green.withValues(alpha: 0.2),
                   Colors.green,
                 ),
               ),
             ],
           ),
-          
           const SizedBox(height: 12),
-          
           Row(
             children: [
               Expanded(
                 child: _buildStatCard(
                   'Saved',
                   '${result.bytesSaved} bytes',
-                  const Color(0xFFE8997F).withValues(alpha:0.2),
+                  const Color(0xFFE8997F).withValues(alpha: 0.2),
                   const Color(0xFFE8997F),
                 ),
               ),
@@ -514,30 +618,26 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 child: _buildStatCard(
                   'Compression',
                   '${result.compressionRatio}%',
-                  Colors.blue.withValues(alpha:0.2),
+                  Colors.blue.withValues(alpha: 0.2),
                   Colors.blue,
                 ),
               ),
             ],
           ),
-          
           const SizedBox(height: 12),
-          
           _buildStatCard(
             'HTTP Status',
             '${result.httpStatusCode} - ${_getStatusText(result.httpStatusCode)}',
-            Colors.purple.withValues(alpha:0.2),
+            Colors.purple.withValues(alpha: 0.2),
             Colors.purple,
           ),
-          
           const SizedBox(height: 24),
-          
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha:0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha:0.1)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -557,7 +657,8 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                       icon: const Icon(Icons.copy, size: 18),
                       color: const Color(0xFFE8997F),
                       onPressed: () {
-                        Clipboard.setData(ClipboardData(text: result.base64Payload));
+                        Clipboard.setData(
+                            ClipboardData(text: result.base64Payload));
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Copied to clipboard')),
                         );
@@ -570,7 +671,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                   result.base64Payload,
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.white.withValues(alpha:0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontFamily: 'monospace',
                   ),
                   maxLines: 3,
@@ -581,7 +682,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                   '${result.base64Length} characters transmitted',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withValues(alpha:0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -592,9 +693,9 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.red.withValues(alpha:0.1),
+              color: Colors.red.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.red.withValues(alpha:0.3)),
+              border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -617,13 +718,14 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
     );
   }
 
-  Widget _buildStatCard(String label, String value, Color bgColor, Color textColor) {
+  Widget _buildStatCard(
+      String label, String value, Color bgColor, Color textColor) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: textColor.withValues(alpha:0.3)),
+        border: Border.all(color: textColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -632,7 +734,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.white.withValues(alpha:0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 4),
@@ -648,7 +750,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
       ),
     );
   }
-  
+
   String _getStatusText(int statusCode) {
     if (statusCode == 200) return 'OK';
     if (statusCode == 201) return 'Created';

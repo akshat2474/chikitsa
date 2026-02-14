@@ -16,7 +16,7 @@ class ImageUploadService {
   static const int _chunkSize = 64 * 1024;
   static const int _maxRetries = 3;
 
-  static const String _uploadUrl = 'http://192.168.1.14:8080/upload';
+  static const String _uploadUrl = 'http://192.168.1.12:8080/upload';
 
   Future<void> processAndUpload(File originalFile,
       {Function(double)? onProgress}) async {

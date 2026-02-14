@@ -2,257 +2,189 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ChikitsaTheme {
-  // ─── Vercel Monochrome Palette ────────────────────────────────
-  static const Color black = Color(0xFF000000);
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color gray100 = Color(0xFFFAFAFA);
-  static const Color gray200 = Color(0xFFEAEAEA);
-  static const Color gray400 = Color(0xFF999999);
-  static const Color gray600 = Color(0xFF666666);
-  static const Color gray900 = Color(0xFF111111);
+  // ─── Brutalist / Swiss Palette ────────────────────────────────
+  static const Color boneWhite = Color(0xFFF3F2EE); // Driftime background
+  static const Color pureBlack = Color(0xFF000000);
+  static const Color alertOrange = Color(0xFFFF5722); // High contrast accent
+  static const Color darkGrey = Color(0xFF333333);
 
-  // ─── Light Theme ───────────────────────────────────────────────
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      primaryColor: black,
-      scaffoldBackgroundColor: white,
-      cardColor: white,
+      primaryColor: pureBlack,
+      scaffoldBackgroundColor: boneWhite,
+      cardColor: boneWhite, // No cards really, just borders
+
       colorScheme: const ColorScheme.light(
-        primary: black,
-        onPrimary: white,
-        secondary: black,
-        onSecondary: white,
-        surface: white,
-        onSurface: black,
-        outline: gray200,
+        primary: pureBlack,
+        onPrimary: boneWhite,
+        secondary: pureBlack,
+        onSecondary: boneWhite,
+        surface: boneWhite,
+        onSurface: pureBlack,
+        outline: pureBlack,
+        error: alertOrange,
       ),
-      fontFamily: GoogleFonts.inter().fontFamily,
-      textTheme: _buildTextTheme(black, gray600),
+
+      fontFamily: GoogleFonts.archivo().fontFamily, // Geometric, strong
+
+      textTheme: _buildTextTheme(),
+
       appBarTheme: AppBarTheme(
-        backgroundColor: white,
+        backgroundColor: boneWhite,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        iconTheme: const IconThemeData(color: black),
-        titleTextStyle: GoogleFonts.inter(
-          color: black,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -0.5,
+        iconTheme: const IconThemeData(color: pureBlack, size: 28),
+        titleTextStyle: GoogleFonts.archivoBlack(
+          // Massive headers
+          color: pureBlack,
+          fontSize: 24,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -1.0,
         ),
-        shape: const Border(bottom: BorderSide(color: gray200, width: 1)),
       ),
+
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: black,
-          foregroundColor: white,
+          backgroundColor: pureBlack,
+          foregroundColor: boneWhite,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6), // Sharp 6px radius
-          ),
-          textStyle: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
+          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero), // Sharp
+          textStyle: GoogleFonts.archivo(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.0,
           ),
         ),
       ),
+
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: black,
-          side: const BorderSide(color: gray200, width: 1),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-          ),
-          textStyle: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
+          foregroundColor: pureBlack,
+          side: const BorderSide(color: pureBlack, width: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          textStyle: GoogleFonts.archivo(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.0,
           ),
         ),
       ),
+
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: white,
+        fillColor: Colors.white,
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: const BorderSide(color: gray200),
+            const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: pureBlack, width: 2),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: const BorderSide(color: gray200),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: pureBlack, width: 2),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: const BorderSide(color: black),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: pureBlack, width: 4), // Thicker focus
         ),
-        labelStyle: GoogleFonts.inter(color: gray600, fontSize: 13),
-        hintStyle: GoogleFonts.inter(color: gray400, fontSize: 13),
+        hintStyle: GoogleFonts.archivo(color: Colors.black45),
+        labelStyle:
+            GoogleFonts.archivo(color: pureBlack, fontWeight: FontWeight.bold),
       ),
-      cardTheme: CardThemeData(
-        color: white,
+
+      iconTheme: const IconThemeData(color: pureBlack, size: 28),
+
+      dividerTheme: const DividerThemeData(
+        color: pureBlack,
+        thickness: 2,
+      ),
+
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return boneWhite;
+          return pureBlack;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return pureBlack;
+          return Colors.transparent;
+        }),
+        trackOutlineColor: WidgetStateProperty.all(pureBlack),
+        trackOutlineWidth: WidgetStateProperty.all(2.0),
+      ),
+
+      cardTheme: const CardThemeData(
+        color: boneWhite,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: gray200),
+          borderRadius: BorderRadius.zero,
+          side: BorderSide(color: pureBlack, width: 2),
         ),
       ),
-      iconTheme: const IconThemeData(color: black, size: 20),
-      dividerTheme: const DividerThemeData(color: gray200, thickness: 1),
     );
   }
 
-  // ─── Dark Theme ────────────────────────────────────────────────
-  static ThemeData get darkTheme {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      primaryColor: white,
-      scaffoldBackgroundColor: black,
-      cardColor: black,
-      colorScheme: const ColorScheme.dark(
-        primary: white,
-        onPrimary: black,
-        secondary: white,
-        onSecondary: black,
-        surface: black,
-        onSurface: white,
-        outline: gray900,
-      ),
-      fontFamily: GoogleFonts.inter().fontFamily,
-      textTheme: _buildTextTheme(white, gray400),
-      appBarTheme: AppBarTheme(
-        backgroundColor: black,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        centerTitle: false,
-        iconTheme: const IconThemeData(color: white),
-        titleTextStyle: GoogleFonts.inter(
-          color: white,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -0.5,
-        ),
-        shape: const Border(bottom: BorderSide(color: gray900, width: 1)),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: white,
-          foregroundColor: black,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-          ),
-          textStyle: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: white,
-          side: const BorderSide(color: gray900, width: 1),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-          ),
-          textStyle: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: black,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: const BorderSide(color: gray900),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: const BorderSide(color: gray900),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: const BorderSide(color: white),
-        ),
-        labelStyle: GoogleFonts.inter(color: gray400, fontSize: 13),
-        hintStyle: GoogleFonts.inter(color: gray600, fontSize: 13),
-      ),
-      cardTheme: CardThemeData(
-        color: black,
-        elevation: 0,
-        margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: gray900),
-        ),
-      ),
-      iconTheme: const IconThemeData(color: white, size: 20),
-      dividerTheme: const DividerThemeData(color: gray900, thickness: 1),
-    );
-  }
+  // Dark theme concept for Brutalism usually just inverts or stays light.
+  // We'll keep it strictly light as per the "Driftime" reference (Cream bg).
+  static ThemeData get darkTheme => lightTheme;
 
-  static TextTheme _buildTextTheme(Color primary, Color secondary) {
+  static TextTheme _buildTextTheme() {
     return TextTheme(
-      displayLarge: GoogleFonts.inter(
-        fontSize: 32,
-        fontWeight: FontWeight.w700,
-        color: primary,
-        letterSpacing: -1.0,
+      displayLarge: GoogleFonts.archivoBlack(
+        // HERO HEADER
+        fontSize: 56,
+        fontWeight: FontWeight.w900,
+        color: pureBlack,
+        letterSpacing: -3.0,
+        height: 0.9,
       ),
-      displayMedium: GoogleFonts.inter(
+      displayMedium: GoogleFonts.archivoBlack(
+        fontSize: 40,
+        fontWeight: FontWeight.w900,
+        color: pureBlack,
+        letterSpacing: -2.0,
+        height: 0.95,
+      ),
+      headlineSmall: GoogleFonts.archivo(
         fontSize: 24,
-        fontWeight: FontWeight.w700,
-        color: primary,
+        fontWeight: FontWeight.w800,
+        color: pureBlack,
         letterSpacing: -0.5,
       ),
-      headlineSmall: GoogleFonts.inter(
+      titleLarge: GoogleFonts.archivo(
         fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: primary,
-        letterSpacing: -0.5,
+        fontWeight: FontWeight.w700,
+        color: pureBlack,
       ),
-      titleLarge: GoogleFonts.inter(
+      titleMedium: GoogleFonts.archivo(
         fontSize: 18,
         fontWeight: FontWeight.w600,
-        color: primary,
-        letterSpacing: -0.5,
+        color: pureBlack,
       ),
-      titleMedium: GoogleFonts.inter(
-        fontSize: 16,
+      bodyLarge: GoogleFonts.archivo(
+        // Editorial Body
+        fontSize: 18,
         fontWeight: FontWeight.w500,
-        color: primary,
+        color: pureBlack,
+        height: 1.4,
       ),
-      titleSmall: GoogleFonts.inter(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: primary,
-      ),
-      bodyLarge: GoogleFonts.inter(
+      bodyMedium: GoogleFonts.archivo(
         fontSize: 16,
         fontWeight: FontWeight.w400,
-        color: primary,
+        color: darkGrey,
+        height: 1.4,
       ),
-      bodyMedium: GoogleFonts.inter(
+      bodySmall: GoogleFonts.archivo(
         fontSize: 14,
-        fontWeight: FontWeight.w400,
-        color: secondary,
-      ),
-      bodySmall: GoogleFonts.inter(
-        fontSize: 12,
-        fontWeight: FontWeight.w400,
-        color: secondary,
+        fontWeight: FontWeight.w500,
+        color: pureBlack,
+        letterSpacing: 0.5,
       ),
     );
   }

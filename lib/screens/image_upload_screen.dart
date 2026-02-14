@@ -97,29 +97,25 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                  color: Colors.white,
+                  border: Border.all(color: Colors.black, width: 2),
                 ),
                 child: _selectedImage != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.file(_selectedImage!, fit: BoxFit.contain),
-                      )
+                    ? Image.file(_selectedImage!, fit: BoxFit.contain)
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.add_photo_alternate_outlined,
-                              size: 64,
-                              color: Colors.grey.withValues(alpha: 0.3)),
+                              size: 64, color: Colors.black),
                           const SizedBox(height: 16),
                           Text(
-                            "Select an X-Ray or Report",
+                            "SELECT X-RAY OR REPORT",
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium
                                 ?.copyWith(
-                                  color: Colors.grey,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
                                 ),
                           ),
                         ],
@@ -149,6 +145,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
               children: [
                 Expanded(
                   child: _buildActionButton(
+                    context: context,
                     icon: Icons.camera_alt_outlined,
                     label: "Camera",
                     onPressed: _isUploading
@@ -159,6 +156,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildActionButton(
+                    context: context,
                     icon: Icons.photo_library_outlined,
                     label: "Gallery",
                     onPressed: _isUploading
@@ -182,11 +180,9 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.grey.shade300,
-                  disabledForegroundColor: Colors.grey.shade500,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
                   ),
                 ),
                 child: _isUploading
@@ -196,9 +192,11 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                         child: CircularProgressIndicator(
                             color: Colors.white, strokeWidth: 2))
                     : const Text(
-                        "Upload Securely",
+                        "UPLOAD SECURELY",
                         style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.0),
                       ),
               ),
             ),
@@ -209,6 +207,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
   }
 
   Widget _buildActionButton({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required VoidCallback? onPressed,
@@ -217,12 +216,13 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         foregroundColor: Colors.black,
-        side: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        side: const BorderSide(color: Colors.black, width: 2),
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       ),
       icon: Icon(icon, size: 20, color: Colors.black),
-      label: Text(label),
+      label: Text(label.toUpperCase(),
+          style: const TextStyle(fontWeight: FontWeight.bold)),
     );
   }
 }

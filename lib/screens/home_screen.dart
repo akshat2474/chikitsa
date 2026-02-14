@@ -2,159 +2,149 @@ import 'package:flutter/material.dart';
 import 'package:chikitsa/screens/bson_demo_screen.dart';
 import 'package:chikitsa/screens/medical_reminders_screen.dart';
 import 'package:chikitsa/screens/activity_history_screen.dart';
-import 'package:chikitsa/main.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
+      body: SafeArea(
+        child: Column(
           children: [
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: colorScheme.primary,
-                borderRadius: BorderRadius.circular(4),
+            // Header Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(width: 12, height: 12, color: Colors.black),
+                      const SizedBox(width: 8),
+                      Text('CHIKITSA',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.5)),
+                    ],
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                const ActivityHistoryScreen()),
+                      );
+                    },
+                    icon: const Icon(Icons.history, color: Colors.black),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: 8),
-            const Text('Chikitsa'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              themeNotifier.value = isDark ? ThemeMode.light : ThemeMode.dark;
-            },
-            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-            tooltip: 'Toggle Theme',
-          ),
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const ActivityHistoryScreen()),
-              );
-            },
-            icon: const Icon(Icons.history),
-            tooltip: 'History',
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Hero Section
-            Text(
-              'Dashboard',
-              style: Theme.of(context).textTheme.displayMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Manage your health assessments and reminders.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 32),
 
-            // Main Action
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const BsonDemoScreen()),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  border: Border.all(color: colorScheme.outline),
-                  borderRadius: BorderRadius.circular(8),
-                ),
+            // Scrollable Content
+            Expanded(
+              child: SingleChildScrollView(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    // Big Headline Section
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'FUTURE\nOF CARE.',
+                            style: Theme.of(context).textTheme.displayLarge,
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'We empower progressive individuals to create lasting impact through strategic health monitoring.',
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                          const SizedBox(height: 32),
+
+                          // Primary CTA (Full width sharp button)
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const BsonDemoScreen()),
+                                );
+                              },
+                              child: const Text('START ASSESSMENT'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const Divider(height: 1, thickness: 2, color: Colors.black),
+
+                    // Feature Grid
+                    // Brutalism grid: Borders between elements
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 2,
+                      childAspectRatio: 1.0,
+                      mainAxisSpacing: 0,
+                      crossAxisSpacing: 0,
+                      padding: EdgeInsets.zero,
                       children: [
-                        Icon(Icons.monitor_heart_outlined,
-                            size: 28, color: colorScheme.primary),
-                        Icon(Icons.arrow_forward,
-                            size: 20, color: colorScheme.onSurface),
+                        _buildBrutalistCard(
+                          context,
+                          'MEDICATION\nTRACKER',
+                          Icons.medication_outlined,
+                          () {},
+                          borderRight: true,
+                          borderBottom: true,
+                        ),
+                        _buildBrutalistCard(
+                          context,
+                          'SMART\nREMINDERS',
+                          Icons.alarm,
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const MedicationRemindersScreen()),
+                            );
+                          },
+                          borderRight: false,
+                          borderBottom: true,
+                        ),
+                        _buildBrutalistCard(
+                          context,
+                          'GENERIC\nALTS',
+                          Icons.currency_exchange,
+                          () {},
+                          borderRight: true,
+                          borderBottom: false,
+                        ),
+                        _buildBrutalistCard(
+                          context,
+                          'RX\nSCANNER',
+                          Icons.document_scanner_outlined,
+                          () {},
+                          borderRight: false,
+                          borderBottom: false,
+                        ),
                       ],
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'New Assessment',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Start a new AI-powered health checkup.',
-                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-
-            // Features Grid
-            Text(
-              'Services',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.5,
-              children: [
-                _buildFeatureCard(
-                  context,
-                  'Medications',
-                  Icons.medication_outlined,
-                  () {},
-                ),
-                _buildFeatureCard(
-                  context,
-                  'Reminders',
-                  Icons.alarm,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              const MedicationRemindersScreen()),
-                    );
-                  },
-                ),
-                _buildFeatureCard(
-                  context,
-                  'Generic Alts',
-                  Icons.currency_rupee,
-                  () {},
-                ),
-                _buildFeatureCard(
-                  context,
-                  'Rx Scanner',
-                  Icons.document_scanner_outlined,
-                  () {},
-                ),
-              ],
             ),
           ],
         ),
@@ -162,29 +152,34 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    VoidCallback onTap,
-  ) {
-    return GestureDetector(
+  Widget _buildBrutalistCard(
+      BuildContext context, String title, IconData icon, VoidCallback onTap,
+      {bool borderRight = false, bool borderBottom = false}) {
+    return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border.all(color: Theme.of(context).colorScheme.outline),
-          borderRadius: BorderRadius.circular(8),
+          border: Border(
+            right: borderRight
+                ? const BorderSide(color: Colors.black, width: 2)
+                : BorderSide.none,
+            bottom: borderBottom
+                ? const BorderSide(color: Colors.black, width: 2)
+                : BorderSide.none,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(icon, size: 24, color: Theme.of(context).colorScheme.primary),
+            Icon(icon, size: 32, color: Colors.black),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleSmall,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                  ),
             ),
           ],
         ),

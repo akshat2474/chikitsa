@@ -411,38 +411,29 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.labelLarge,
+          style: Theme.of(context)
+              .textTheme
+              .labelLarge
+              ?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: TextField(
-            controller: controller,
-            style: Theme.of(context).textTheme.bodyLarge,
-            keyboardType: keyboardType,
-            maxLines: maxLines,
-            inputFormatters: inputFormatters,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: Theme.of(context).inputDecorationTheme.hintStyle,
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              contentPadding: const EdgeInsets.all(16),
-              suffixIcon: VoiceInputButton(
-                simulationText: simulationText,
-                onTextReceived: (englishText) {
-                  if (label.contains('Symptoms') &&
-                      controller.text.isNotEmpty) {
-                    controller.text = "${controller.text}, $englishText";
-                  } else {
-                    controller.text = englishText;
-                  }
-                },
-              ),
+        TextField(
+          controller: controller,
+          style: Theme.of(context).textTheme.bodyLarge,
+          keyboardType: keyboardType,
+          maxLines: maxLines,
+          inputFormatters: inputFormatters,
+          decoration: InputDecoration(
+            hintText: hint,
+            suffixIcon: VoiceInputButton(
+              simulationText: simulationText,
+              onTextReceived: (englishText) {
+                if (label.contains('Symptoms') && controller.text.isNotEmpty) {
+                  controller.text = "${controller.text}, $englishText";
+                } else {
+                  controller.text = englishText;
+                }
+              },
             ),
           ),
         ),
@@ -456,49 +447,29 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
       children: [
         Text(
           'Gender',
-          style: Theme.of(context).textTheme.labelLarge,
+          style: Theme.of(context)
+              .textTheme
+              .labelLarge
+              ?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(12),
+        DropdownButtonFormField<String>(
+          decoration: const InputDecoration(
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _selectedGender,
-              isExpanded: true,
-              dropdownColor: Theme.of(context).cardColor,
-              style: Theme.of(context).textTheme.bodyLarge,
-              icon: const Icon(Icons.arrow_drop_down, color: Colors.black),
-              items: ['Male', 'Female', 'Other'].map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Row(
-                    children: [
-                      Icon(
-                        value == 'Male'
-                            ? Icons.male
-                            : value == 'Female'
-                                ? Icons.female
-                                : Icons.transgender,
-                        color: Colors.black,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(value),
-                    ],
-                  ),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedGender = newValue!;
-                });
-              },
-            ),
-          ),
+          style: Theme.of(context).textTheme.bodyLarge,
+          icon: const Icon(Icons.arrow_drop_down, color: Colors.black),
+          items: ['Male', 'Female', 'Other'].map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            setState(() {
+              _selectedGender = newValue!;
+            });
+          },
         ),
       ],
     );
@@ -508,13 +479,9 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Transmission Results',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
+          style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 16),
         Row(
@@ -523,11 +490,11 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: result.success
-                    ? Colors.green.withValues(alpha: 0.2)
-                    : Colors.red.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(20),
+                    ? Colors.green.withValues(alpha: 0.1)
+                    : Colors.red.withValues(alpha: 0.1),
                 border: Border.all(
                   color: result.success ? Colors.green : Colors.red,
+                  width: 2,
                 ),
               ),
               child: Row(
@@ -538,13 +505,14 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                     color: result.success ? Colors.green : Colors.red,
                     size: 16,
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   Text(
-                    result.success ? 'Sent Successfully' : 'Failed',
+                    result.success ? 'SENT SUCCESSFULLY' : 'FAILED',
                     style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
                       color: result.success ? Colors.green : Colors.red,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ],
@@ -556,22 +524,22 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8997F).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFE8997F)),
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  border: Border.all(color: Colors.orange, width: 2),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.auto_awesome,
-                        color: Color(0xFFE8997F), size: 16),
-                    const SizedBox(width: 6),
+                    const Icon(Icons.flash_on,
+                        color: Colors.deepOrange, size: 16),
+                    const SizedBox(width: 8),
                     Text(
-                      'Using ${result.compressionMethod}',
+                      'VIA ${result.compressionMethod.toUpperCase()}',
                       style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFE8997F),
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepOrange,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ],
@@ -585,19 +553,17 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
             children: [
               Expanded(
                 child: _buildStatCard(
-                  'Original',
-                  '${result.originalJsonSize} bytes',
-                  Colors.red.withValues(alpha: 0.2),
-                  Colors.red,
+                  'ORIGINAL',
+                  '${result.originalJsonSize} B',
+                  Colors.black,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _buildStatCard(
-                  'Sent',
-                  '${result.bytesSentOverNetwork} bytes',
-                  Colors.green.withValues(alpha: 0.2),
-                  Colors.green,
+                  'SENT',
+                  '${result.bytesSentOverNetwork} B',
+                  Colors.black,
                 ),
               ),
             ],
@@ -607,37 +573,33 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
             children: [
               Expanded(
                 child: _buildStatCard(
-                  'Saved',
-                  '${result.bytesSaved} bytes',
-                  const Color(0xFFE8997F).withValues(alpha: 0.2),
-                  const Color(0xFFE8997F),
+                  'SAVED',
+                  '${result.bytesSaved} B',
+                  Colors.black,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _buildStatCard(
-                  'Compression',
+                  'RATIO',
                   '${result.compressionRatio}%',
-                  Colors.blue.withValues(alpha: 0.2),
-                  Colors.blue,
+                  Colors.black,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
           _buildStatCard(
-            'HTTP Status',
-            '${result.httpStatusCode} - ${_getStatusText(result.httpStatusCode)}',
-            Colors.purple.withValues(alpha: 0.2),
-            Colors.purple,
+            'HTTP STATUS',
+            '${result.httpStatusCode} - ${_getStatusText(result.httpStatusCode).toUpperCase()}',
+            Colors.black,
           ),
           const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              color: Colors.white,
+              border: Border.all(color: Colors.black, width: 2),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -646,16 +608,16 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Compressed Payload',
+                      'COMPRESSED PAYLOAD',
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.copy, size: 18),
-                      color: const Color(0xFFE8997F),
+                      icon: const Icon(Icons.copy, size: 20),
+                      color: Colors.black,
                       onPressed: () {
                         Clipboard.setData(
                             ClipboardData(text: result.base64Payload));
@@ -670,8 +632,8 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 Text(
                   result.base64Payload,
                   style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 12,
+                    color: Colors.black87,
                     fontFamily: 'monospace',
                   ),
                   maxLines: 3,
@@ -679,11 +641,11 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${result.base64Length} characters transmitted',
+                  '${result.base64Length} chars',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontStyle: FontStyle.italic,
+                    color: Colors.black54,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -694,8 +656,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.red.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+              border: Border.all(color: Colors.red, width: 2),
             ),
             child: Row(
               children: [
@@ -707,6 +668,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                     style: const TextStyle(
                       color: Colors.red,
                       fontSize: 14,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -718,14 +680,12 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
     );
   }
 
-  Widget _buildStatCard(
-      String label, String value, Color bgColor, Color textColor) {
+  Widget _buildStatCard(String label, String value, Color textColor) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: textColor.withValues(alpha: 0.3)),
+        color: Colors.white,
+        border: Border.all(color: Colors.black, width: 2),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -734,15 +694,17 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.white.withValues(alpha: 0.7),
+              fontWeight: FontWeight.bold,
+              color: Colors.black54,
+              letterSpacing: 1.0,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
               color: textColor,
             ),
           ),

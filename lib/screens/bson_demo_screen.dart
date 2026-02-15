@@ -509,7 +509,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: _selectedGender,
+          initialValue: _selectedGender,
           decoration: const InputDecoration(
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),

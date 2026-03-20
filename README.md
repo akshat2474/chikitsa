@@ -1,33 +1,45 @@
 # Chikitsa
 
-Chikitsa is a rural healthcare diagnostics application developed using Flutter. It is specifically engineered to operate efficiently within low-bandwidth environments, such as 2G networks. The application facilitates the collection and transmission of patient diagnostic data and medical imagery using efficient serialization and compression techniques to ensure reliability in areas with unstable internet connectivity.
+Chikitsa is a comprehensive rural healthcare diagnostics application developed using Flutter. It is meticulously engineered to operate efficiently within low-bandwidth environments, such as 2G networks, while providing a rich, user-friendly interface. The application facilitates the collection and transmission of patient diagnostic data, medical imagery, and medication tracking, empowering users and healthcare providers in areas with unstable internet connectivity.
 
-## Key Features
+## Core Capabilities & Features
 
-* **Bandwidth Optimization:** Utilizes efficient data encoding and compression to minimize payload size for rapid transmission over slow networks.
-* **Resilient Image Uploads:** Implements a robust image upload service that compresses images to WebP format and splits them into manageable chunks.
-* **Automatic Retries:** Features an exponential backoff retry mechanism to handle network timeouts and interruptions seamlessly.
-* **Structured Data Serialization:** Uses Protocol Buffers (Protobuf) for strongly typed and efficient serialization of patient data, including demographics, vitals, and geolocation.
+### 🩺 Medical Assessment & Diagnostics
+* **Advanced Triage Service:** Simulates medical assessments to provide triage feedback, evaluate symptoms, and output diagnostic data.
+* **Resilient Data Transmission:** Utilizes efficient data encoding (`ProtobufZstdHelper`) and compression to minimize payload size for rapid transmission.
+* **Structured Data Serialization:** Uses Protocol Buffers (Protobuf) for strongly typed and efficient serialization of patient data (e.g., demographics, vitals, geolocation).
 
-### Data Models
+### 💊 Medication Management
+* **Rx Scanner:** Prototype feature that scans medicine packages to quickly verify their authenticity and details.
+* **Medication Tracker:** Helps users track their medication adherence, dosage, and inventory levels to prevent missed doses.
+* **Generic Alternatives:** A unique feature allowing users to search and compare branded medicines with their generic equivalents, calculating potential healthcare savings.
+* **Medical Reminders:** An integrated `NotificationService` that manages and delivers timely medication reminders.
 
-The application handles comprehensive patient health records defined via Protobuf schema, including:
+### 🖼️ Image Processing Pipeline
+* **Compression:** Large images are compressed to WebP format with a high-quality setting and resized to save bandwidth.
+* **Chunking & Retry Mechanisms:** Files are broken down into 64KB chunks to prevent request timeouts, complete with an exponential backoff retry mechanism to gracefully handle network interruptions.
+
+### 🌐 Localization & Accessibility
+* **Multi-language Support:** The application includes a `LanguageService` that dynamically supports multiple languages (English, Hindi, Bengali, Tamil, Telugu), complete with comprehensive Hindi translations for accessibility in rural India.
+
+### 🎨 Modern & Responsive UI
+* **Dynamic Design System:** Features an elegant `ChikitsaTheme` with full support for user-toggled Light and Dark modes.
+* **iOS-Style Homescreen:** The app embraces a premium, polished aesthetic, utilizing dynamic wallpapers, glassmorphic iOS-style widgets (Clock, Weather, Battery), an app dock, and a seamless search bar.
+
+---
+
+## Data Models
+
+The robust back-end structure handles comprehensive patient health records defined via Protobuf schema:
 
 * **Patient Demographics:** ID, Name, Age, Gender, Phone.
 * **Vitals:** Temperature, Blood Pressure, Heart Rate.
 * **Metadata:** Geolocation (Latitude/Longitude), Unix Timestamps, and Symptoms list.
 
-### Image Processing Pipeline
+## Tips for Developers
 
-1. **Compression:** Images are compressed to WebP format with a quality setting of 90 and resized to a maximum dimension of 1920px.
-2. **Chunking:** Large files are split into 64KB chunks to prevent request timeouts.
-3. **Transmission:** Chunks are uploaded sequentially with a session ID and file hash for integrity verification.
-
-
-### Tips
 **Generate Protobuf files (if necessary):**
-If you modify the definitions in `lib/proto/`, regenerate the Dart code:
+If you modify the definitions in `lib/proto/`, regenerate the Dart code using the following command:
 ```bash
 protoc --dart_out=grpc:lib/proto -Ilib/proto lib/proto/*.proto
-
 ```

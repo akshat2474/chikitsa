@@ -17,6 +17,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "10.0.1"
+  archive:
+    dependency: transitive
+    description:
+      name: archive
+      sha256: a96e8b390886ee8abb49b7bd3ac8df6f451c621619f52a26e815fdcf568959ff
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.9"
   args:
     dependency: transitive
     description:
@@ -432,6 +440,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  image:
+    dependency: "direct main"
+    description:
+      name: image
+      sha256: f9881ff4998044947ec38d098bc7c8316ae1186fa786eddffdb867b9bc94dfce
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.8.0"
   image_picker:
     dependency: "direct main"
     description:
@@ -576,6 +592,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  mobile_scanner:
+    dependency: "direct main"
+    description:
+      name: mobile_scanner
+      sha256: c92c26bf2231695b6d3477c8dcf435f51e28f87b1745966b1fe4c47a286171ce
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.2.0"
   native_toolchain_c:
     dependency: transitive
     description:
@@ -744,22 +768,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.2"
+  posix:
+    dependency: transitive
+    description:
+      name: posix
+      sha256: "185ef7606574f789b40f289c233efa52e96dead518aed988e040a10737febb07"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.5.0"
   protobuf:
     dependency: "direct main"
     description:
       name: protobuf
-      sha256: "68645b24e0716782e58948f8467fd42a880f255096a821f9e7d0ec625b00c84d"
+      sha256: "75ec242d22e950bdcc79ee38dd520ce4ee0bc491d7fadc4ea47694604d22bf06"
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.0"
+    version: "6.0.0"
   protoc_plugin:
     dependency: "direct dev"
     description:
       name: protoc_plugin
-      sha256: fb0554851c9eca30bd18405fbbfe81e39166d4a2f0e5b770606fd69da3da0b2f
+      sha256: d1ea363e9118f954d9d482c2f7281c5ff5149b059e68672d1faa564d49091f05
       url: "https://pub.dev"
     source: hosted
-    version: "21.1.2"
+    version: "25.0.0"
   pub_semver:
     dependency: transitive
     description:

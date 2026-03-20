@@ -1,13 +1,15 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: lib/proto/patient.proto
-//
-// @dart = 2.12
+// Generated from patient.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
+// ignore_for_file: unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -33,14 +35,34 @@ const PatientData$json = {
     {'1': 'patient_id', '3': 1, '4': 1, '5': 13, '10': 'patientId'},
     {'1': 'patient_name', '3': 2, '4': 1, '5': 9, '10': 'patientName'},
     {'1': 'age', '3': 3, '4': 1, '5': 13, '10': 'age'},
-    {'1': 'gender', '3': 4, '4': 1, '5': 14, '6': '.PatientData.Gender', '10': 'gender'},
+    {
+      '1': 'gender',
+      '3': 4,
+      '4': 1,
+      '5': 14,
+      '6': '.PatientData.Gender',
+      '10': 'gender'
+    },
     {'1': 'phone', '3': 5, '4': 1, '5': 4, '10': 'phone'},
     {'1': 'symptoms', '3': 6, '4': 3, '5': 9, '10': 'symptoms'},
     {'1': 'temperature', '3': 7, '4': 1, '5': 2, '10': 'temperature'},
     {'1': 'blood_pressure', '3': 8, '4': 1, '5': 9, '10': 'bloodPressure'},
     {'1': 'heart_rate', '3': 9, '4': 1, '5': 13, '10': 'heartRate'},
-    {'1': 'timestamp_unix_ms', '3': 10, '4': 1, '5': 3, '10': 'timestampUnixMs'},
-    {'1': 'location', '3': 11, '4': 1, '5': 11, '6': '.Location', '10': 'location'},
+    {
+      '1': 'timestamp_unix_ms',
+      '3': 10,
+      '4': 1,
+      '5': 3,
+      '10': 'timestampUnixMs'
+    },
+    {
+      '1': 'location',
+      '3': 11,
+      '4': 1,
+      '5': 11,
+      '6': '.Location',
+      '10': 'location'
+    },
   ],
   '4': [PatientData_Gender$json],
 };
@@ -67,4 +89,3 @@ final $typed_data.Uint8List patientDataDescriptor = $convert.base64Decode(
     'cFVuaXhNcxIlCghsb2NhdGlvbhgLIAEoCzIJLkxvY2F0aW9uUghsb2NhdGlvbiJSCgZHZW5kZX'
     'ISEgoOR0VOREVSX1VOS05PV04QABIPCgtHRU5ERVJfTUFMRRABEhEKDUdFTkRFUl9GRU1BTEUQ'
     'AhIQCgxHRU5ERVJfT1RIRVIQAw==');
-

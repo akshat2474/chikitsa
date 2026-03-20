@@ -32,6 +32,8 @@ class LanguageService {
     'CARD_REMINDERS': 'स्मार्ट\nरिमाइंडर्स',
     'CARD_GENERIC': 'जेनेरिक\nविकल्प',
     'CARD_RX': 'पर्ची\nस्कैनर',
+    'CARD_ABHA': 'आभा\nस्कैनर',
+    'CTA_RESCAN_ABHA': 'आभा आईडी फिर से स्कैन करें / नए विवरण सिंक करें',
 
     // Assessment Screen
     'TITLE_ASSESSMENT': 'नया मूल्यांकन',
@@ -142,6 +144,8 @@ class LanguageService {
     'CARD_REMINDERS': 'SMART\nREMINDERS',
     'CARD_GENERIC': 'GENERIC\nALTS',
     'CARD_RX': 'RX\nSCANNER',
+    'CARD_ABHA': 'ABHA\nSCANNER',
+    'CTA_RESCAN_ABHA': 'Rescan ABHA ID / Sync New Details',
     'TITLE_ASSESSMENT': 'New Entry',
     'SECTION_PATIENT': 'Patient Details',
     'LABEL_NAME': 'Patient Name',

@@ -6,10 +6,99 @@ import 'package:chikitsa/screens/activity_history_screen.dart';
 import 'package:chikitsa/screens/rx_scanner_screen.dart';
 import 'package:chikitsa/screens/medication_tracker_screen.dart';
 import 'package:chikitsa/screens/generic_alts_screen.dart';
+import 'package:chikitsa/screens/abha_scanner_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chikitsa/main.dart'; // For toggleTheme
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String? _userName;
+  String? _abhaId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userName = prefs.getString('abha_name');
+      _abhaId = prefs.getString('abha_address');
+    });
+  }
+
+  void _onStartAssessment() {
+    if (_abhaId != null && _abhaId!.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const BsonDemoScreen()),
+      );
+    } else {
+      showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Link ABHA ID',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Scan your ABHA QR Code to automatically fill your assessment details and effortlessly link your health records.',
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.qr_code_scanner),
+                label: const Text('Scan ABHA Now'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade600,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AbhaScannerScreen()),
+                  ).then((_) => _loadProfile().then((_) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const BsonDemoScreen()),
+                    );
+                  }));
+                },
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const BsonDemoScreen()),
+                  );
+                },
+                child: const Text('Skip / Continue without linking'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,29 +190,44 @@ class HomeScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            lang.get('HEADLINE'),
-                            style: theme.textTheme.displayLarge,
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            lang.get('SUBHEAD'),
-                            style: theme.textTheme.bodyLarge,
-                          ),
+                          if (_userName != null && _userName!.isNotEmpty) ...[
+                            Text(
+                              'Hello,\n$_userName!',
+                              style: theme.textTheme.displayLarge?.copyWith(fontSize: 40),
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'ABHA ID: $_abhaId',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ] else ...[
+                            Text(
+                              lang.get('HEADLINE'),
+                              style: theme.textTheme.displayLarge,
+                            ),
+                            const SizedBox(height: 24),
+                            Text(
+                              lang.get('SUBHEAD'),
+                              style: theme.textTheme.bodyLarge,
+                            ),
+                          ],
                           const SizedBox(height: 32),
 
                           // Primary CTA (Full width sharp button)
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const BsonDemoScreen()),
-                                );
-                              },
+                              onPressed: _onStartAssessment,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: theme.colorScheme.onSurface,
                                 foregroundColor: theme.colorScheme.surface,
@@ -131,6 +235,29 @@ class HomeScreen extends StatelessWidget {
                               child: Text(lang.get('CTA_START')),
                             ),
                           ),
+                          if (_abhaId != null && _abhaId!.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const AbhaScannerScreen()),
+                                  );
+                                  _loadProfile();
+                                },
+                                icon: const Icon(Icons.qr_code_scanner),
+                                label: Text(lang.get('CTA_RESCAN_ABHA')),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  foregroundColor: theme.colorScheme.onSurface,
+                                  side: BorderSide(color: theme.colorScheme.onSurface.withValues(alpha: 0.5), width: 2),
+                                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

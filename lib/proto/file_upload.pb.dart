@@ -79,7 +79,6 @@ class FileChunk extends $pb.GeneratedMessage {
   @$core.pragma('dart2js:noInline')
   static FileChunk create() => FileChunk._();
   FileChunk createEmptyInstance() => create();
-  static $pb.PbList<FileChunk> createRepeated() => $pb.PbList<FileChunk>();
   @$core.pragma('dart2js:noInline')
   static FileChunk getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<FileChunk>(create);
   static FileChunk? _defaultInstance;
@@ -193,7 +192,6 @@ class UploadStatus extends $pb.GeneratedMessage {
   @$core.pragma('dart2js:noInline')
   static UploadStatus create() => UploadStatus._();
   UploadStatus createEmptyInstance() => create();
-  static $pb.PbList<UploadStatus> createRepeated() => $pb.PbList<UploadStatus>();
   @$core.pragma('dart2js:noInline')
   static UploadStatus getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UploadStatus>(create);
   static UploadStatus? _defaultInstance;

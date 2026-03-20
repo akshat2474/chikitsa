@@ -20,6 +20,7 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
   final TextEditingController _patientIdController = TextEditingController();
   final TextEditingController _patientNameController = TextEditingController();
   final TextEditingController _patientAgeController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
   final TextEditingController _symptomsController = TextEditingController();
   final TextEditingController _temperatureController = TextEditingController();
   final TextEditingController _bpController = TextEditingController();
@@ -41,11 +42,65 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
   Future<void> _loadPatientProfile() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _patientIdController.text = prefs.getString('patient_id') ?? '';
-      _patientNameController.text = prefs.getString('patient_name') ?? '';
-      _patientAgeController.text = prefs.getString('patient_age') ?? '';
-      _selectedGender = prefs.getString('patient_gender') ?? 'Male';
-      _phoneController.text = prefs.getString('patient_phone') ?? '';
+      // Prioritize ABHA ID details over generically saved patient details
+      _patientIdController.text = prefs.getString('abha_address') ?? prefs.getString('patient_id') ?? '';
+      _patientNameController.text = prefs.getString('abha_name') ?? prefs.getString('patient_name') ?? '';
+      
+      String? gender = prefs.getString('abha_gender') ?? prefs.getString('patient_gender');
+      if (gender != null && gender.isNotEmpty) {
+        if (gender.toLowerCase().startsWith('m')) _selectedGender = 'Male';
+        else if (gender.toLowerCase().startsWith('f')) _selectedGender = 'Female';
+        else _selectedGender = 'Other';
+      } else {
+        _selectedGender = 'Male';
+      }
+
+      String? dobStr = prefs.getString('abha_dob');
+      if (dobStr != null && dobStr.isNotEmpty && !dobStr.contains('X')) {
+        try {
+          int? year;
+          if (dobStr.contains('-') || dobStr.contains('/')) {
+            final parts = dobStr.split(RegExp(r'[-/]'));
+            if (parts.first.length == 4) year = int.parse(parts.first);
+            else if (parts.last.length == 4) year = int.parse(parts.last);
+            else if (parts.length == 3) year = int.parse(parts.last); // e.g. 19-09-2002
+          } else if (dobStr.length == 4) {
+             year = int.parse(dobStr); // YYYY format alone
+          }
+          
+          if (year != null && year > 1900 && year <= DateTime.now().year) {
+            final age = DateTime.now().year - year;
+            _patientAgeController.text = age.toString();
+          } else {
+            _patientAgeController.text = prefs.getString('patient_age') ?? '';
+          }
+        } catch (_) {
+          _patientAgeController.text = prefs.getString('patient_age') ?? '';
+        }
+      } else {
+        _patientAgeController.text = prefs.getString('patient_age') ?? '';
+      }
+
+      // Populate phone with mobile
+      final mobile = prefs.getString('abha_mobile');
+      if (mobile != null && mobile.isNotEmpty) {
+        _phoneController.text = mobile;
+      } else {
+        _phoneController.text = prefs.getString('patient_phone') ?? '';
+      }
+      
+      // Construct native location string
+      final String state = prefs.getString('abha_state_name') ?? '';
+      final String dist = prefs.getString('abha_district_name') ?? '';
+      final String pin = prefs.getString('abha_pincode') ?? '';
+      final String physicalAddress = prefs.getString('abha_physical_address') ?? '';
+      
+      final locationParts = [dist, state, pin].where((e) => e.isNotEmpty).toList();
+      if (locationParts.isNotEmpty) {
+        _locationController.text = locationParts.join(', ');
+      } else if (physicalAddress.isNotEmpty) {
+        _locationController.text = physicalAddress;
+      }
     });
   }
 
@@ -344,6 +399,14 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
                     child: _buildGenderDropdown(),
                   ),
                 ],
+              ),
+              const SizedBox(height: 24),
+
+              _buildTextField(
+                controller: _locationController,
+                label: 'Location (State / District / PIN)',
+                hint: 'Demographic location details',
+                simulationText: "Delhi, 110001",
               ),
 
               const SizedBox(height: 48),

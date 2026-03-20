@@ -177,6 +177,28 @@ class SupabaseSyncService {
   }
 
   // ─────────────────────────────────────────────────────────────
+  // Counterfeit Reporting
+  // ─────────────────────────────────────────────────────────────
+
+  Future<void> reportCounterfeit({
+    required String barcode,
+    required String company,
+    required String location,
+    String? abhaId,
+  }) async {
+    try {
+      await _client.from('counterfeit_reports').insert({
+        'barcode': barcode,
+        'company': company,
+        'location': location,
+        if (abhaId != null) 'reported_by_abha': abhaId,
+      });
+    } catch (e) {
+      debugPrint('[Supabase] Counterfeit report failed: $e');
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
   // Report Export
   // ─────────────────────────────────────────────────────────────
 

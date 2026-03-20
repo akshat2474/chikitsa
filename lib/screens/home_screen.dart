@@ -7,8 +7,10 @@ import 'package:chikitsa/screens/rx_scanner_screen.dart';
 import 'package:chikitsa/screens/medication_tracker_screen.dart';
 import 'package:chikitsa/screens/generic_alts_screen.dart';
 import 'package:chikitsa/screens/abha_scanner_screen.dart';
+import 'package:chikitsa/screens/surveillance_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chikitsa/main.dart'; // For toggleTheme
+import '../services/surveillance_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,11 +22,18 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String? _userName;
   String? _abhaId;
+  int _activeAlertCount = 0;
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
+    _loadAlertCount();
+  }
+
+  Future<void> _loadAlertCount() async {
+    final count = await SurveillanceService.instance.getActiveAlertCount();
+    if (mounted) setState(() => _activeAlertCount = count);
   }
 
   Future<void> _loadProfile() async {
@@ -321,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           },
                           borderRight: true,
-                          borderBottom: false,
+                          borderBottom: true,
                         ),
                         _buildBrutalistCard(
                           context,
@@ -333,6 +342,52 @@ class _HomeScreenState extends State<HomeScreen> {
                               MaterialPageRoute(
                                   builder: (context) =>
                                       const RxScannerScreen()),
+                            );
+                          },
+                          borderRight: false,
+                          borderBottom: true,
+                        ),
+                        // Surveillance tile with alert badge
+                        Stack(
+                          alignment: Alignment.topRight,
+                          children: [
+                            _buildBrutalistCard(
+                              context,
+                              lang.get('CARD_SURVEILLANCE'),
+                              Icons.biotech_outlined,
+                              () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const SurveillanceScreen()),
+                                );
+                                _loadAlertCount();
+                              },
+                              borderRight: true,
+                              borderBottom: false,
+                            ),
+                            if (_activeAlertCount > 0)
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  color: Colors.red,
+                                  child: Text(
+                                    '$_activeAlertCount',
+                                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        _buildBrutalistCard(
+                          context,
+                          'HISTORY',
+                          Icons.history_outlined,
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ActivityHistoryScreen()),
                             );
                           },
                           borderRight: false,

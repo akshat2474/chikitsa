@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/language_service.dart';
 import '../services/text_service.dart';
+import '../services/surveillance_service.dart';
 import '../widgets/voice_input_button.dart';
 
 class BsonDemoScreen extends StatefulWidget {
@@ -293,6 +294,29 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
     setState(() {
       _isLoading = false;
     });
+
+    // Fire-and-forget anonymous case recording for disease surveillance 
+    if (result.success) {
+      final prefs = await SharedPreferences.getInstance();
+      final abhaAddress = prefs.getString('abha_address');
+      SurveillanceService.instance.recordCaseAndCheck(
+        symptoms: _symptomsController.text,
+        abhaAddress: abhaAddress,
+      ).then((alert) {
+        if (alert != null && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '⚠️ Outbreak Alert: ${alert.diseaseCategory} spike detected in ${alert.district}, ${alert.state} (${alert.caseCount} cases)',
+              ),
+              backgroundColor: Colors.deepOrange,
+              duration: const Duration(seconds: 6),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      });
+    }
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

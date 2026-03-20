@@ -34,6 +34,7 @@ class LanguageService {
     'CARD_RX': 'पर्ची\nस्कैनर',
     'CARD_ABHA': 'आभा\nस्कैनर',
     'CTA_RESCAN_ABHA': 'आभा आईडी फिर से स्कैन करें / नए विवरण सिंक करें',
+    'CARD_SURVEILLANCE': 'रोग\nनिगरानी',
 
     // Assessment Screen
     'TITLE_ASSESSMENT': 'नया मूल्यांकन',
@@ -146,6 +147,7 @@ class LanguageService {
     'CARD_RX': 'RX\nSCANNER',
     'CARD_ABHA': 'ABHA\nSCANNER',
     'CTA_RESCAN_ABHA': 'Rescan ABHA ID / Sync New Details',
+    'CARD_SURVEILLANCE': 'DISEASE\nSURVEILLANCE',
     'TITLE_ASSESSMENT': 'New Entry',
     'SECTION_PATIENT': 'Patient Details',
     'LABEL_NAME': 'Patient Name',

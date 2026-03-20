@@ -289,36 +289,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         _buildBrutalistCard(
                           context,
-                          lang.get('CARD_MEDS'),
-                          Icons.medication_outlined,
-                          () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const MedicationTrackerScreen()),
-                            );
-                          },
-                          borderRight: true,
-                          borderBottom: true,
-                        ),
-                        _buildBrutalistCard(
-                          context,
-                          lang.get('CARD_REMINDERS'),
-                          Icons.alarm,
-                          () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const MedicationRemindersScreen()),
-                            );
-                          },
-                          borderRight: false,
-                          borderBottom: true,
-                        ),
-                        _buildBrutalistCard(
-                          context,
                           lang.get('CARD_GENERIC'),
                           Icons.currency_exchange,
                           () {
@@ -342,6 +312,36 @@ class _HomeScreenState extends State<HomeScreen> {
                               MaterialPageRoute(
                                   builder: (context) =>
                                       const RxScannerScreen()),
+                            );
+                          },
+                          borderRight: false,
+                          borderBottom: true,
+                        ),
+                        _buildBrutalistCard(
+                          context,
+                          lang.get('CARD_MEDS'),
+                          Icons.medication_outlined,
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const MedicationTrackerScreen()),
+                            );
+                          },
+                          borderRight: true,
+                          borderBottom: true,
+                        ),
+                        _buildBrutalistCard(
+                          context,
+                          lang.get('CARD_REMINDERS'),
+                          Icons.alarm,
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const MedicationRemindersScreen()),
                             );
                           },
                           borderRight: false,

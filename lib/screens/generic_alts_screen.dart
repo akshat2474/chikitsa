@@ -1,4 +1,5 @@
 import 'package:chikitsa/services/language_service.dart';
+import 'package:chikitsa/services/generic_alts_service.dart';
 import 'package:flutter/material.dart';
 
 class GenericAltsScreen extends StatefulWidget {
@@ -10,15 +11,38 @@ class GenericAltsScreen extends StatefulWidget {
 
 class _GenericAltsScreenState extends State<GenericAltsScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final _service = GenericAltsService();
+  
   String _searchQuery = "";
+  List<GenericAltItem> _results = [];
+  bool _isLoadingService = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initService();
+  }
+
+  Future<void> _initService() async {
+    await _service.loadData();
+    if (mounted) {
+      setState(() {
+        _isLoadingService = false;
+      });
+    }
+  }
+
+  void _onSearchChanged(String value) {
+    setState(() {
+      _searchQuery = value;
+      _results = _service.search(value);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final lang = LanguageService.current;
     final theme = Theme.of(context);
-
-    // Dummy data for Augmentin result
-    final bool showAugmentin = _searchQuery.toLowerCase().contains('aug');
 
     return Scaffold(
       appBar: AppBar(
@@ -32,11 +56,7 @@ class _GenericAltsScreenState extends State<GenericAltsScreen> {
             padding: const EdgeInsets.all(16),
             child: TextField(
               controller: _searchController,
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
+              onChanged: _onSearchChanged,
               decoration: InputDecoration(
                 hintText: lang.get('GENERIC_SEARCH_HINT'),
                 prefixIcon: const Icon(Icons.search),
@@ -45,9 +65,7 @@ class _GenericAltsScreenState extends State<GenericAltsScreen> {
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
-                          setState(() {
-                            _searchQuery = "";
-                          });
+                          _onSearchChanged("");
                         },
                       )
                     : null,
@@ -60,67 +78,66 @@ class _GenericAltsScreenState extends State<GenericAltsScreen> {
 
           // Content
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                if (_searchQuery.isEmpty) ...[
-                  // Recent Searches Header
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Text(
-                      lang.get('GENERIC_RECENT'),
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
+            child: _isLoadingService
+                ? const Center(child: CircularProgressIndicator())
+                : ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      if (_searchQuery.isEmpty) ...[
+                        // Recent Searches Header
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Text(
+                            lang.get('GENERIC_RECENT'),
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                        _buildComparisonCard(
+                          context,
+                          brandName: 'Pan-D',
+                          genericName: 'Pantoprazole + Domperidone',
+                          brandPrice: 199,
+                          genericPrice: 45,
+                          // dosage info can be hardcoded or omitted for dummy recents
+                        ),
+                        _buildComparisonCard(
+                          context,
+                          brandName: 'Shelcal 500',
+                          genericName: 'Calcium + Vitamin D3',
+                          brandPrice: 140,
+                          genericPrice: 60,
+                        ),
+                        _buildComparisonCard(
+                          context,
+                          brandName: 'Dolo 650',
+                          genericName: 'Paracetamol 650mg',
+                          brandPrice: 35,
+                          genericPrice: 12,
+                        ),
+                      ] else if (_results.isNotEmpty) ...[
+                        // Search Results
+                        ..._results.map((item) => _buildComparisonCard(
+                              context,
+                              brandName: item.brandName,
+                              genericName: item.mappedGenericName,
+                              brandPrice: item.brandPrice,
+                              genericPrice: item.genericMrp,
+                            )),
+                      ] else ...[
+                        // No results
+                        const SizedBox(height: 48),
+                        const Center(
+                          child: Text(
+                            'No alternatives found',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  _buildComparisonCard(
-                    context,
-                    brandName: 'Pan-D',
-                    genericName: 'Pantoprazole + Domperidone',
-                    brandPrice: 199,
-                    genericPrice: 45,
-                    dosage: '10 Capsules',
-                  ),
-                  _buildComparisonCard(
-                    context,
-                    brandName: 'Shelcal 500',
-                    genericName: 'Calcium + Vitamin D3',
-                    brandPrice: 140,
-                    genericPrice: 60,
-                    dosage: '15 Tablets',
-                  ),
-                  _buildComparisonCard(
-                    context,
-                    brandName: 'Dolo 650',
-                    genericName: 'Paracetamol 650mg',
-                    brandPrice: 35,
-                    genericPrice: 12,
-                    dosage: '15 Tablets',
-                  ),
-                ] else if (showAugmentin) ...[
-                  // Search Result
-                  _buildComparisonCard(
-                    context,
-                    brandName: 'Augmentin 625',
-                    genericName: 'Amoxicillin + Clavulanate',
-                    brandPrice: 223,
-                    genericPrice: 85,
-                    dosage: '6 Tablets',
-                  ),
-                ] else ...[
-                  // No results
-                  const SizedBox(height: 48),
-                  const Center(
-                    child: Text(
-                      'No alternatives found',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                ],
-              ],
-            ),
           ),
         ],
       ),
@@ -133,7 +150,7 @@ class _GenericAltsScreenState extends State<GenericAltsScreen> {
     required String genericName,
     required double brandPrice,
     required double genericPrice,
-    required String dosage,
+    String? dosage,
   }) {
     final theme = Theme.of(context);
     final lang = LanguageService.current;
@@ -168,11 +185,13 @@ class _GenericAltsScreenState extends State<GenericAltsScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Spacer(),
-                Text(
-                  dosage,
-                  style: theme.textTheme.bodySmall,
-                ),
+                if (dosage != null) ...[
+                  const Spacer(),
+                  Text(
+                    dosage,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
               ],
             ),
           ),

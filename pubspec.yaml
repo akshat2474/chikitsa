@@ -46,4 +46,5 @@ flutter:
     - assets/images/Logo.jpg
     - assets/images/Logo.png
     - assets/patient_dict_32k.zst
+    - assets/generic_alternative.csv
 

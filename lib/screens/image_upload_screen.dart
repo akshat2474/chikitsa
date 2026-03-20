@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../services/image_upload_service.dart';
+
 import '../services/language_service.dart';
 
 class ImageUploadScreen extends StatefulWidget {
@@ -38,41 +38,26 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
 
     setState(() {
       _isUploading = true;
-      _statusMessage = "Compressing & Chunking...";
+      _statusMessage = "Processing...";
       _uploadProgress = 0.0;
     });
 
-    try {
-      final service = ImageUploadService();
-      await service.processAndUpload(
-        _selectedImage!,
-        onProgress: (progress) {
-          setState(() {
-            _uploadProgress = progress;
-            _statusMessage =
-                "Uploading: ${(progress * 100).toStringAsFixed(0)}%";
-          });
-        },
-      );
+    // Simulate upload delay
+    await Future.delayed(const Duration(seconds: 1));
 
-      setState(() {
-        _statusMessage = "Upload Complete!";
-        _uploadProgress = 1.0;
-      });
-      _showSnackBar("Image uploaded successfully!");
+    setState(() {
+      _statusMessage = "Image Selected!";
+      _uploadProgress = 1.0;
+    });
 
-      // Return success to previous screen after short delay
-      Future.delayed(const Duration(seconds: 1), () {
-        if (mounted) {
-          Navigator.pop(context, true);
-        }
-      });
-    } catch (e) {
-      setState(() => _statusMessage = "Upload Failed");
-      _showSnackBar("Upload failed: $e", isError: true);
-    } finally {
-      setState(() => _isUploading = false);
-    }
+    // Return the image path to the previous screen
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        Navigator.pop(context, _selectedImage!.path);
+      }
+    });
+
+    setState(() => _isUploading = false);
   }
 
   void _showSnackBar(String message, {bool isError = false}) {

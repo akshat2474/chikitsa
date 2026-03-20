@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:chikitsa/screens/image_upload_screen.dart';
+import 'package:chikitsa/services/medical_assessment_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,9 +25,10 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
   final TextEditingController _bpController = TextEditingController();
   final TextEditingController _heartRateController = TextEditingController();
 
-  SmsSendResult? _lastResult;
   bool _isLoading = false;
   bool _isImageUploaded = false;
+  String? _uploadedImagePath; // ← real path returned from picker
+  Map<String, dynamic>? _assessmentResult;
   String _selectedGender = 'Male';
 
   @override
@@ -185,15 +187,31 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
 
     final patientData = _getPatientData();
 
-    final result = await SmsService.sendWithBestCompression(
+    // Simulate SMS sending success for prototype
+    // final result = await SmsService.sendWithBestCompression(
+    //   phoneNumber: _phoneController.text,
+    //   data: patientData,
+    // );
+
+    // Construct dummy result for prototype consistency
+    final result = SmsSendResult(
+      success: true,
       phoneNumber: _phoneController.text,
-      data: patientData,
+      dataSentBytes: 50,
+      base64Length: 20,
+      compressionRatio: "50.0",
+      originalJsonSize: 100,
+      base64Payload: "dummy_payload",
+      message: "Data sent successfully",
+      compressionMethod: "gzip",
+      httpStatusCode: 200,
+      serverResponse: "OK",
+      bytesSentOverNetwork: 50,
     );
 
-    setState(() {
-      _lastResult = result;
-      _isLoading = false;
-    });
+    // setState(() {
+    //   _lastResult = result;
+    // });
 
     // Save patient profile for auto-fill on next visit
     if (result.success) {
@@ -202,6 +220,24 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
 
     // Save assessment to history (regardless of success/failure)
     await _saveAssessmentToHistory(patientData, result.success);
+
+    // Call Real Triage API (with image if available)
+    try {
+      final assessment = await MedicalAssessmentService.sendAssessment(
+        symptoms: _symptomsController.text,
+        imagePath: _uploadedImagePath,
+      );
+
+      setState(() {
+        _assessmentResult = assessment;
+      });
+    } catch (e) {
+      _showError("Assessment failed: $e");
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -375,15 +411,16 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
 
               InkWell(
                 onTap: () async {
-                  final result = await Navigator.push<bool>(
+                  final imagePath = await Navigator.push<String>(
                     context,
                     MaterialPageRoute(
                         builder: (context) => const ImageUploadScreen()),
                   );
 
-                  if (result == true) {
+                  if (imagePath != null) {
                     setState(() {
                       _isImageUploaded = true;
+                      _uploadedImagePath = imagePath;
                     });
                   }
                 },
@@ -442,7 +479,9 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
 
               const SizedBox(height: 80), // Space for FAB
 
-              if (_lastResult != null) _buildResults(_lastResult!),
+              // if (_lastResult != null) _buildResults(_lastResult!),
+              if (_assessmentResult != null)
+                _buildAssessmentResults(_assessmentResult!),
             ],
           ),
         ),
@@ -533,249 +572,294 @@ class _BsonDemoScreenState extends State<BsonDemoScreen> {
     );
   }
 
-  Widget _buildResults(SmsSendResult result) {
+  Color _riskColor(String? riskLevel) {
+    switch ((riskLevel ?? '').toLowerCase()) {
+      case 'critical':
+        return const Color(0xFFB71C1C);
+      case 'high':
+        return const Color(0xFFE53935);
+      case 'moderate':
+        return const Color(0xFFF57C00);
+      case 'low':
+        return const Color(0xFF388E3C);
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Widget _buildAssessmentResults(Map<String, dynamic> result) {
+    final riskLevel = result['risk_level'] as String?;
+    final riskScore = result['risk_score'];
+    final concerns = (result['potential_concerns'] as List<dynamic>? ?? []);
+    final recommendation = result['recommendation'] as String?;
+    final seekEmergency = result['seek_emergency_care'] as bool? ?? false;
+    final followUp = result['follow_up_timeframe'] as String?;
+    final observations = result['general_observations'] as String?;
+    final disclaimer = result['disclaimer'] as String?;
+    final riskColor = _riskColor(riskLevel);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SizedBox(height: 32),
         Text(
-          'Transmission Results',
+          'Triage Assessment',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 16),
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: result.success
-                    ? Colors.green.withValues(alpha: 0.1)
-                    : Colors.red.withValues(alpha: 0.1),
-                border: Border.all(
-                  color: result.success ? Colors.green : Colors.red,
-                  width: 2,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    result.success ? Icons.check_circle : Icons.error,
-                    color: result.success ? Colors.green : Colors.red,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    result.success ? 'SENT SUCCESSFULLY' : 'FAILED',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: result.success ? Colors.green : Colors.red,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            if (result.success)
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.1),
-                  border: Border.all(color: Colors.orange, width: 2),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.flash_on,
-                        color: Colors.deepOrange, size: 16),
-                    const SizedBox(width: 8),
-                    Text(
-                      'VIA ${result.compressionMethod.toUpperCase()}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepOrange,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        if (result.success) ...[
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  'ORIGINAL',
-                  '${result.originalJsonSize} B',
-                  Colors.black,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  'SENT',
-                  '${result.bytesSentOverNetwork} B',
-                  Colors.black,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  'SAVED',
-                  '${result.bytesSaved} B',
-                  Colors.black,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  'RATIO',
-                  '${result.compressionRatio}%',
-                  Colors.black,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _buildStatCard(
-            'HTTP STATUS',
-            '${result.httpStatusCode} - ${_getStatusText(result.httpStatusCode).toUpperCase()}',
-            Colors.black,
-          ),
-          const SizedBox(height: 24),
+
+        // Emergency Banner
+        if (seekEmergency)
           Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.black, width: 2),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            color: const Color(0xFFB71C1C),
+            child: const Row(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'COMPRESSED PAYLOAD',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.copy, size: 20),
-                      color: Colors.black,
-                      onPressed: () {
-                        Clipboard.setData(
-                            ClipboardData(text: result.base64Payload));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Copied to clipboard')),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  result.base64Payload,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.black87,
-                    fontFamily: 'monospace',
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${result.base64Length} chars',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.black54,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ] else ...[
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.red.withValues(alpha: 0.1),
-              border: Border.all(color: Colors.red, width: 2),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.error_outline, color: Colors.red),
-                const SizedBox(width: 12),
+                Icon(Icons.local_hospital, color: Colors.white, size: 20),
+                SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    result.message,
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                    'SEEK EMERGENCY CARE IMMEDIATELY',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                      letterSpacing: 1.0,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-        ],
+
+        // Main card
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            border: Border.all(
+                color: Theme.of(context).colorScheme.onSurface, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Risk level header
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                color: riskColor,
+                child: Row(
+                  children: [
+                    Icon(
+                      riskScore != null && (riskScore as num) >= 7
+                          ? Icons.warning_amber_rounded
+                          : Icons.shield_outlined,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'RISK LEVEL: ${(riskLevel ?? 'UNKNOWN').toUpperCase()}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 15,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (riskScore != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '$riskScore / 10',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Potential Concerns
+                    if (concerns.isNotEmpty) ...[
+                      const Text(
+                        'POTENTIAL CONCERNS',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: concerns
+                            .map((c) => Chip(
+                                  label: Text(
+                                    c.toString(),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: riskColor,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  backgroundColor:
+                                      riskColor.withValues(alpha: 0.1),
+                                  side: BorderSide(
+                                      color: riskColor.withValues(alpha: 0.4)),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+
+                    // Follow-up timeframe
+                    if (followUp != null) ...[
+                      const Text(
+                        'FOLLOW-UP TIMEFRAME',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(Icons.schedule,
+                              size: 16, color: Colors.grey),
+                          const SizedBox(width: 6),
+                          Text(
+                            followUp,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: riskColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+
+                    // Recommendation
+                    if (recommendation != null) ...[
+                      const Text(
+                        'RECOMMENDATION',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: riskColor.withValues(alpha: 0.06),
+                          border: Border(
+                            left: BorderSide(color: riskColor, width: 3),
+                          ),
+                        ),
+                        child: Text(
+                          recommendation,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+
+                    // General Observations
+                    if (observations != null) ...[
+                      const Text(
+                        'CLINICAL OBSERVATIONS',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        observations,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          height: 1.6,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+
+                    // Disclaimer
+                    if (disclaimer != null)
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        color: Colors.amber.withValues(alpha: 0.12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.info_outline,
+                                size: 15, color: Colors.amber),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                disclaimer,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  height: 1.4,
+                                  color: Colors.black54,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 80),
       ],
     );
-  }
-
-  Widget _buildStatCard(String label, String value, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.black, width: 2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: Colors.black54,
-              letterSpacing: 1.0,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: textColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _getStatusText(int statusCode) {
-    if (statusCode == 200) return 'OK';
-    if (statusCode == 201) return 'Created';
-    if (statusCode >= 400 && statusCode < 500) return 'Client Error';
-    if (statusCode >= 500) return 'Server Error';
-    return 'Unknown';
   }
 }

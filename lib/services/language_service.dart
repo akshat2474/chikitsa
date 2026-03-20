@@ -104,6 +104,29 @@ class LanguageService {
     'MSG_DELETE_CONFIRM': 'क्या आप इसे हटाना चाहते हैं?',
     'MSG_REMINDER_DELETED': 'रिमाइंडर हटाया गया',
     'BTN_UNDO': 'पूर्ववत करें',
+
+    // Rx Scanner
+    'RX_TITLE': 'दवा की जांच',
+    'RX_INSTRUCTION': 'प्रामाणिकता की जांच के लिए बारकोड स्कैन करें।',
+    'RX_BTN_SCAN': 'दवा स्कैन करें',
+    'RX_VERIFYING': 'निर्माता का सत्यापन हो रहा है...',
+    'RX_BTN_SCAN_AGAIN': 'दूसरा स्कैन करें',
+
+    // Medication Tracker
+    'MED_TRACKER_TITLE': 'दवा ट्रैकर',
+    'MED_ADHERENCE_LABEL': 'आज का अनुपालन',
+    'MED_TODAY_SCHEDULE': 'आज की अनुसूची',
+    'MED_LOW_STOCK': 'कम स्टॉक',
+    'MED_LEFT': 'गोलियां बची हैं',
+    'MED_BTN_ADD': 'दवा जोड़ें',
+
+    // Generic Alts
+    'GENERIC_TITLE': 'जेनेरिक विकल्प',
+    'GENERIC_SEARCH_HINT': 'दवा खोजें...',
+    'GENERIC_SAVE': 'बचत',
+    'GENERIC_BRAND': 'महंगी ब्रांडेड',
+    'GENERIC_ALT': 'किफायती जेनेरिक',
+    'GENERIC_RECENT': 'हाल की खोजें',
   };
 
   // English fallback (keys themselves are usually English identifiers/defaults,
@@ -181,6 +204,24 @@ class LanguageService {
     'MSG_DELETE_CONFIRM': 'Are you sure you want to delete this reminder?',
     'MSG_REMINDER_DELETED': 'Reminder deleted',
     'BTN_UNDO': 'Undo',
+    'RX_TITLE': 'Rx Verification',
+    'RX_INSTRUCTION':
+        'Align medicine package or barcode within the frame to verify authenticity.',
+    'RX_BTN_SCAN': 'SCAN MEDICINE',
+    'RX_VERIFYING': 'Verifying Manufacturer...',
+    'RX_BTN_SCAN_AGAIN': 'SCAN ANOTHER',
+    'MED_TRACKER_TITLE': 'Medication Tracker',
+    'MED_ADHERENCE_LABEL': 'Today\'s Adherence',
+    'MED_TODAY_SCHEDULE': 'Today\'s Schedule',
+    'MED_LOW_STOCK': 'Low Stock',
+    'MED_LEFT': 'pills left',
+    'MED_BTN_ADD': 'Add Medicine',
+    'GENERIC_TITLE': 'Generic Alternatives',
+    'GENERIC_SEARCH_HINT': 'Search medicine...',
+    'GENERIC_SAVE': 'Save',
+    'GENERIC_BRAND': 'EXPENSIVE BRAND',
+    'GENERIC_ALT': 'AFFORDABLE GENERIC',
+    'GENERIC_RECENT': 'Recent Searches',
   };
 
   String get(String key) {

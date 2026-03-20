@@ -3,6 +3,9 @@ import 'package:chikitsa/screens/bson_demo_screen.dart';
 import 'package:chikitsa/services/language_service.dart';
 import 'package:chikitsa/screens/medical_reminders_screen.dart';
 import 'package:chikitsa/screens/activity_history_screen.dart';
+import 'package:chikitsa/screens/rx_scanner_screen.dart';
+import 'package:chikitsa/screens/medication_tracker_screen.dart';
+import 'package:chikitsa/screens/generic_alts_screen.dart';
 import 'package:chikitsa/main.dart'; // For toggleTheme
 
 class HomeScreen extends StatelessWidget {
@@ -152,7 +155,14 @@ class HomeScreen extends StatelessWidget {
                           context,
                           lang.get('CARD_MEDS'),
                           Icons.medication_outlined,
-                          () {},
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const MedicationTrackerScreen()),
+                            );
+                          },
                           borderRight: true,
                           borderBottom: true,
                         ),
@@ -175,7 +185,14 @@ class HomeScreen extends StatelessWidget {
                           context,
                           lang.get('CARD_GENERIC'),
                           Icons.currency_exchange,
-                          () {},
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const GenericAltsScreen()),
+                            );
+                          },
                           borderRight: true,
                           borderBottom: false,
                         ),
@@ -183,7 +200,14 @@ class HomeScreen extends StatelessWidget {
                           context,
                           lang.get('CARD_RX'),
                           Icons.document_scanner_outlined,
-                          () {},
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const RxScannerScreen()),
+                            );
+                          },
                           borderRight: false,
                           borderBottom: false,
                         ),

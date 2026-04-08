@@ -1,6 +1,6 @@
 # Chikitsa
 
-Chikitsa is a comprehensive rural healthcare diagnostics application developed using Flutter. It is meticulously engineered to operate efficiently within low-bandwidth environments, such as 2G networks, while providing a rich, user-friendly interface. The application facilitates the collection and transmission of patient diagnostic data, medical imagery, and medication tracking, empowering users and healthcare providers in areas with unstable internet connectivity.
+Chikitsa is a comprehensive rural healthcare diagnostics application developed using Flutter. It is operates efficiently within low-bandwidth environments, such as 2G networks. Provides features such as collection and transmission of patient diagnostic data, medical imagery, and medication tracking, ABHA ID integration , generic alternatives to branded drugs, disease tracking in a region
 
 ## Core Capabilities & Features
 
@@ -22,24 +22,9 @@ Chikitsa is a comprehensive rural healthcare diagnostics application developed u
 ### Localization & Accessibility
 * **Multi-language Support:** The application includes a `LanguageService` that dynamically supports multiple languages (English, Hindi, Bengali, Tamil, Telugu), complete with comprehensive Hindi translations for accessibility in rural India.
 
-### Modern & Responsive UI
-* **Dynamic Design System:** Features an elegant `ChikitsaTheme` with full support for user-toggled Light and Dark modes.
-* **iOS-Style Homescreen:** The app embraces a premium, polished aesthetic, utilizing dynamic wallpapers, glassmorphic iOS-style widgets (Clock, Weather, Battery), an app dock, and a seamless search bar.
-
----
-
 ## Data Models
-
-The robust back-end structure handles comprehensive patient health records defined via Protobuf schema:
 
 * **Patient Demographics:** ID, Name, Age, Gender, Phone.
 * **Vitals:** Temperature, Blood Pressure, Heart Rate.
 * **Metadata:** Geolocation (Latitude/Longitude), Unix Timestamps, and Symptoms list.
 
-## Tips for Developers
-
-**Generate Protobuf files (if necessary):**
-If you modify the definitions in `lib/proto/`, regenerate the Dart code using the following command:
-```bash
-protoc --dart_out=grpc:lib/proto -Ilib/proto lib/proto/*.proto
-```

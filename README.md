@@ -4,25 +4,25 @@ Chikitsa is a comprehensive rural healthcare diagnostics application developed u
 
 ## Core Capabilities & Features
 
-### 🩺 Medical Assessment & Diagnostics
+###  Medical Assessment & Diagnostics
 * **Advanced Triage Service:** Simulates medical assessments to provide triage feedback, evaluate symptoms, and output diagnostic data.
 * **Resilient Data Transmission:** Utilizes efficient data encoding (`ProtobufZstdHelper`) and compression to minimize payload size for rapid transmission.
 * **Structured Data Serialization:** Uses Protocol Buffers (Protobuf) for strongly typed and efficient serialization of patient data (e.g., demographics, vitals, geolocation).
 
-### 💊 Medication Management
+### Medication Management
 * **Rx Scanner:** Prototype feature that scans medicine packages to quickly verify their authenticity and details.
 * **Medication Tracker:** Helps users track their medication adherence, dosage, and inventory levels to prevent missed doses.
 * **Generic Alternatives:** A unique feature allowing users to search and compare branded medicines with their generic equivalents, calculating potential healthcare savings.
 * **Medical Reminders:** An integrated `NotificationService` that manages and delivers timely medication reminders.
 
-### 🖼️ Image Processing Pipeline
+### Image Processing Pipeline
 * **Compression:** Large images are compressed to WebP format with a high-quality setting and resized to save bandwidth.
 * **Chunking & Retry Mechanisms:** Files are broken down into 64KB chunks to prevent request timeouts, complete with an exponential backoff retry mechanism to gracefully handle network interruptions.
 
-### 🌐 Localization & Accessibility
+### Localization & Accessibility
 * **Multi-language Support:** The application includes a `LanguageService` that dynamically supports multiple languages (English, Hindi, Bengali, Tamil, Telugu), complete with comprehensive Hindi translations for accessibility in rural India.
 
-### 🎨 Modern & Responsive UI
+### Modern & Responsive UI
 * **Dynamic Design System:** Features an elegant `ChikitsaTheme` with full support for user-toggled Light and Dark modes.
 * **iOS-Style Homescreen:** The app embraces a premium, polished aesthetic, utilizing dynamic wallpapers, glassmorphic iOS-style widgets (Clock, Weather, Battery), an app dock, and a seamless search bar.
 
